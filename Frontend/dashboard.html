@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Trust Security | Command Center</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Custom Cyber Styling -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js & Theme Switcher -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/theme_switcher.js"></script>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent border-bottom border-secondary px-4 py-3 mb-3">
+        <div class="container-fluid px-0">
+            <a class="navbar-brand d-flex align-items-center text-accent fw-bold" href="#">
+                <i class="fa-solid fa-shield-halved fs-3 me-2 text-accent"></i>
+                <div>
+                    <span class="fs-5 d-block text-white fw-bold">ZeroTrust AI</span>
+                    <span class="text-muted font-mono" style="font-size: 0.7rem;">ADAPTIVE COMMAND CENTER</span>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-3">
+                <!-- Theme Switcher Pill -->
+                <div class="theme-switcher-bar d-none d-md-inline-flex">
+                    <button type="button" class="theme-btn active" data-theme="indigo" onclick="applyTheme('indigo')">Indigo</button>
+                    <button type="button" class="theme-btn" data-theme="emerald" onclick="applyTheme('emerald')">Emerald</button>
+                    <button type="button" class="theme-btn" data-theme="platinum" onclick="applyTheme('platinum')">Platinum</button>
+                </div>
+
+                <a href="admin.html" class="btn btn-sm btn-outline-info shadow-sm" id="adminLink" style="display: none;">
+                    <i class="fa-solid fa-user-shield me-1"></i> Admin Panel
+                </a>
+                
+                <div class="d-none d-md-flex align-items-center bg-dark px-3 py-1 rounded-pill border border-secondary">
+                    <span class="pulse-dot me-2"></span>
+                    <span class="text-white small me-2 font-mono">LIVE TRUST:</span>
+                    <span id="liveTrustScore" class="badge bg-success font-mono fs-6">100.0%</span>
+                </div>
+
+                <div class="d-flex align-items-center bg-dark px-3 py-1 rounded-pill border border-secondary text-white small">
+                    <i class="fa-solid fa-user-check text-info me-2"></i>
+                    <span id="navUsername" class="fw-bold">User</span>
+                    <span id="navRoleBadge" class="badge badge-cyber ms-2">Student</span>
+                </div>
+
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="logout()">
+                    <i class="fa-solid fa-power-off me-1"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid px-4 pb-5 animate-fade-in">
+        
+        <!-- Live Security Intel Ticker -->
+        <div class="intel-ticker-bar d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center text-nowrap me-3">
+                <span class="badge bg-danger text-uppercase me-2 font-mono"><i class="fa-solid fa-bolt"></i> Live Feed</span>
+                <span class="text-white small font-mono" id="tickerMsg">⚡ AI Trust Engine Active | Continuous Keystroke & Behavioral Tracking Running | 0 Anomalies Detected</span>
+            </div>
+            <div class="text-muted small font-mono d-none d-md-block">
+                <i class="fa-solid fa-server text-success me-1"></i> Isolation Forest v2.4
+            </div>
+        </div>
+
+        <!-- Top KPI Cards Row -->
+        <div class="row g-3 mb-4">
+            
+            <!-- Card 1: Radial Trust Score Gauge -->
+            <div class="col-lg-3 col-md-6">
+                <div class="glass-panel p-3 text-center h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small text-uppercase font-mono">Dynamic Trust Score</span>
+                        <i class="fa-solid fa-gauge-high text-accent"></i>
+                    </div>
+
+                    <div class="trust-gauge-container my-2">
+                        <svg class="trust-gauge-svg" width="140" height="140" viewBox="0 0 140 140">
+                            <circle class="trust-gauge-bg" cx="70" cy="70" r="55"></circle>
+                            <circle id="trustGaugeArc" class="trust-gauge-fill" cx="70" cy="70" r="55" stroke-dasharray="345.5" stroke-dashoffset="0"></circle>
+                        </svg>
+                        <div class="trust-gauge-text">
+                            <div class="h2 text-white fw-bold mb-0 font-mono" id="gaugeVal">100%</div>
+                            <span class="badge badge-glow-success font-mono" id="gaugeStatus">SAFE</span>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small font-mono" id="gaugeDesc">Optimal trust baseline established</div>
+                </div>
+            </div>
+
+            <!-- Card 2: Behavioral Telemetry Counters -->
+            <div class="col-lg-3 col-md-6">
+                <div class="glass-panel p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small text-uppercase font-mono">Real-time Behavior</span>
+                        <i class="fa-solid fa-fingerprint text-info"></i>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded border border-secondary mb-2">
+                            <span class="small text-muted"><i class="fa-solid fa-keyboard text-accent me-2"></i> Typing Speed</span>
+                            <span class="font-mono fw-bold text-white"><span id="telemetryWpm">60</span> <small class="text-muted">WPM</small></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded border border-secondary mb-2">
+                            <span class="small text-muted"><i class="fa-solid fa-mouse text-info me-2"></i> Mouse Trajectory</span>
+                            <span class="font-mono fw-bold text-white"><span id="telemetryMouse">120</span> <small class="text-muted">ev/10s</small></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded border border-secondary">
+                            <span class="small text-muted"><i class="fa-solid fa-hourglass-half text-warning me-2"></i> Idle Duration</span>
+                            <span class="font-mono fw-bold text-white"><span id="telemetryIdle">0</span> <small class="text-muted">sec</small></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Session Fingerprint & Geo Location -->
+            <div class="col-lg-3 col-md-6">
+                <div class="glass-panel p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small text-uppercase font-mono">Session Fingerprint</span>
+                        <i class="fa-solid fa-network-wired text-warning"></i>
+                    </div>
+
+                    <div>
+                        <div class="text-white fw-bold mb-1" id="dashUserDisplay">User</div>
+                        <div class="text-muted small mb-2"><i class="fa-solid fa-location-dot text-danger me-1"></i> IP Location: <span class="text-info font-mono" id="dashGeo">Auto-Detecting...</span></div>
+                        <div class="text-muted small mb-2"><i class="fa-solid fa-laptop text-accent me-1"></i> Device: <span class="text-white font-mono" id="dashDevice">Workstation</span></div>
+                        <div class="text-muted small"><i class="fa-solid fa-globe text-success me-1"></i> Browser: <span class="text-white font-mono" id="dashBrowser">Chrome</span></div>
+                    </div>
+
+                    <div class="mt-2 pt-2 border-top border-secondary d-flex justify-content-between align-items-center">
+                        <span class="small text-muted font-mono">MFA Verification</span>
+                        <span class="badge bg-success font-mono"><i class="fa-solid fa-check"></i> VERIFIED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: AI Threat Model Metrics -->
+            <div class="col-lg-3 col-md-6">
+                <div class="glass-panel p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small text-uppercase font-mono">AI Threat Engine</span>
+                        <i class="fa-solid fa-robot text-danger"></i>
+                    </div>
+
+                    <div class="text-center py-2">
+                        <div class="h3 text-white fw-bold font-mono mb-1" id="dashThreatsBlocked">0</div>
+                        <div class="text-muted small">Total Attacks Neutralized</div>
+                    </div>
+
+                    <div class="bg-dark p-2 rounded border border-secondary">
+                        <div class="d-flex justify-content-between small font-mono mb-1">
+                            <span class="text-muted">Anomaly Classifier:</span>
+                            <span class="text-success fw-bold">Isolation Forest</span>
+                        </div>
+                        <div class="d-flex justify-content-between small font-mono">
+                            <span class="text-muted">Risk Engine:</span>
+                            <span class="text-info fw-bold">Random Forest</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Middle Section: Charts & Resource Access -->
+        <div class="row g-4 mb-4">
+            
+            <!-- Live Telemetry & Risk Charts -->
+            <div class="col-lg-7">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="text-white mb-0"><i class="fa-solid fa-chart-line text-accent me-2"></i> Real-time Telemetry & Anomaly Analysis</h5>
+                            <span class="text-muted small">Continuous telemetry streaming from background behavioral monitors</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary font-mono" onclick="resetChartData()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
+                    </div>
+
+                    <div class="row align-items-center">
+                        <div class="col-md-8 mb-3 mb-md-0">
+                            <div style="position: relative; height: 240px; width: 100%;">
+                                <canvas id="threatChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted small text-center text-uppercase font-mono mb-2">Risk Factor Weights</h6>
+                            <div style="position: relative; height: 200px; width: 100%;">
+                                <canvas id="riskDoughnutChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Resource Access Control Panel (RBAC & ABAC) -->
+            <div class="col-lg-5">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-accent mb-0"><i class="fa-solid fa-server me-2"></i> Adaptive Resource Gate</h5>
+                        <span class="badge badge-cyber font-mono" id="policyModeBadge">ABAC + RBAC</span>
+                    </div>
+                    <p class="text-muted small mb-3">Click any resource to access. Gates automatically lock or unlock based on your role and real-time Trust Score.</p>
+
+                    <div class="list-group list-group-flush bg-transparent gap-2 mb-4">
+                        <!-- Resource 1: Corporate Email -->
+                        <div class="list-group-item bg-dark border border-secondary rounded p-3 d-flex justify-content-between align-items-center glass-panel-interactive" style="cursor: pointer;" onclick="accessResource('email')" id="resItemEmail">
+                            <div>
+                                <div class="text-white fw-bold"><i class="fa-solid fa-envelope text-info me-2"></i> Corporate Email & Slack</div>
+                                <div class="text-muted small">Public Domain Access • Required Trust: &gt; 30%</div>
+                            </div>
+                            <span class="badge font-mono" id="badgeEmail"><i class="fa-solid fa-lock-open me-1"></i> Checking...</span>
+                        </div>
+
+                        <!-- Resource 2: Payroll & Finance -->
+                        <div class="list-group-item bg-dark border border-secondary rounded p-3 d-flex justify-content-between align-items-center glass-panel-interactive" style="cursor: pointer;" onclick="accessResource('payroll')" id="resItemPayroll">
+                            <div>
+                                <div class="text-white fw-bold"><i class="fa-solid fa-file-invoice-dollar text-warning me-2"></i> Payroll & Finance System</div>
+                                <div class="text-muted small">Role: HR / Admin • Required Trust: &gt; 70%</div>
+                            </div>
+                            <span class="badge font-mono" id="badgePayroll"><i class="fa-solid fa-lock me-1"></i> Checking...</span>
+                        </div>
+
+                        <!-- Resource 3: Confidential HR Database -->
+                        <div class="list-group-item bg-dark border border-secondary rounded p-3 d-flex justify-content-between align-items-center glass-panel-interactive" style="cursor: pointer;" onclick="accessResource('hr')" id="resItemHr">
+                            <div>
+                                <div class="text-white fw-bold"><i class="fa-solid fa-folder-open text-danger me-2"></i> Confidential HR Database</div>
+                                <div class="text-muted small">Role: Admin Only • Required Trust: &gt; 85%</div>
+                            </div>
+                            <span class="badge font-mono" id="badgeHr"><i class="fa-solid fa-lock me-1"></i> Checking...</span>
+                        </div>
+
+                        <!-- Resource 4: Production Server Core -->
+                        <div class="list-group-item bg-dark border border-secondary rounded p-3 d-flex justify-content-between align-items-center glass-panel-interactive" style="cursor: pointer;" onclick="accessResource('production')" id="resItemProd">
+                            <div>
+                                <div class="text-white fw-bold"><i class="fa-solid fa-microchip text-accent me-2"></i> Production Infrastructure</div>
+                                <div class="text-muted small">Role: Admin Only • Required Trust: &gt; 90%</div>
+                            </div>
+                            <span class="badge font-mono" id="badgeProd"><i class="fa-solid fa-lock me-1"></i> Checking...</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-cyber w-100 py-2 rounded-3 shadow-sm" onclick="requestResourceEscalation()">
+                        <i class="fa-solid fa-key me-2"></i> Request Temporary Access Escalation
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Interactive Security Simulation Lab & Data Exfiltration Sandbox -->
+        <div class="row g-4 mb-4">
+            
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 h-100 border-danger">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-danger mb-0"><i class="fa-solid fa-vial text-danger me-2"></i> Interactive Threat Simulation Sandbox</h5>
+                        <span class="badge bg-danger text-uppercase font-mono">Live Tester</span>
+                    </div>
+                    <p class="text-muted small mb-3">Trigger synthetic anomalies to test the ML Isolation Forest model in real time.</p>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-warning w-100 text-start p-3 rounded" onclick="simulateBotTypist()">
+                                <div class="fw-bold text-white mb-1"><i class="fa-solid fa-robot me-1 text-warning"></i> Simulate Bot Typist</div>
+                                <div class="small text-muted">Injects 250 WPM inhuman typing pattern</div>
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-danger w-100 text-start p-3 rounded" onclick="simulateErraticMouse()">
+                                <div class="fw-bold text-white mb-1"><i class="fa-solid fa-computer-mouse me-1 text-danger"></i> Simulate Mouse Anomaly</div>
+                                <div class="small text-muted">Injects sudden zero-movement freeze</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-success btn-sm font-mono flex-grow-1" onclick="resetBehaviorBaseline()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Reset Baseline Behavior
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confidential Data Protection Sandbox -->
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-warning mb-0"><i class="fa-solid fa-vault me-2"></i> Confidential File Repository</h5>
+                        <span class="badge bg-warning text-dark font-mono"><i class="fa-solid fa-eye"></i> Monitored</span>
+                    </div>
+                    <p class="text-muted small mb-3">Repeated downloads will trigger the AI Data Exfiltration algorithm and automatically terminate session.</p>
+
+                    <div class="p-3 border border-secondary rounded bg-dark mb-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-white fw-bold d-block"><i class="fa-solid fa-file-csv text-success me-2"></i> Q3_Financial_Exfiltration_Test.csv</span>
+                                <span class="text-muted small">15 MB • Sensitivity: RESTRICTED</span>
+                            </div>
+                            <button class="btn btn-glow-danger btn-sm px-3" onclick="simulateDownload()">
+                                <i class="fa-solid fa-download me-1"></i> Download File
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center text-muted small font-mono">
+                        <span>Exfiltration Risk Limit: 3 Downloads</span>
+                        <span>Current Count: <span class="text-danger fw-bold" id="dashDownloadCount">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Live Security Event Log Stream -->
+        <div class="glass-panel p-4">
+            <h5 class="text-white mb-3"><i class="fa-solid fa-list-ul text-accent me-2"></i> Live Security Log Stream</h5>
+            <div class="table-responsive">
+                <table class="table table-cyber align-middle mb-0" id="dashLogStreamTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Event Type</th>
+                            <th>Origin IP</th>
+                            <th>Trust Score Impact</th>
+                            <th>AI Assessment & Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/continuous_auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
+

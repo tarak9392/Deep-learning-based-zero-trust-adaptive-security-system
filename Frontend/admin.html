@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Zero Trust Security</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-sidebar {
+            background: var(--glass-bg);
+            border-right: 1px solid var(--glass-border);
+            min-height: 100vh;
+        }
+        .admin-content {
+            padding: 20px;
+        }
+        .nav-link {
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background: var(--secondary-color);
+            border-radius: 8px;
+        }
+        .table-cyber {
+            color: var(--text-main);
+            background: transparent;
+        }
+        .table-cyber th {
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .table-cyber td {
+            border-bottom: 1px solid var(--glass-border);
+        }
+    </style>
+    <script src="js/theme_switcher.js"></script>
+</head>
+<body>
+
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="admin-sidebar p-3" style="width: 260px;">
+            <a href="dashboard.html" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <i class="fa-solid fa-shield-halved fs-4 me-2 text-accent"></i>
+                <span class="fs-5 fw-bold">ZT Admin</span>
+            </a>
+            
+            <!-- Theme Switcher -->
+            <div class="my-3 text-center">
+                <div class="theme-switcher-bar">
+                    <button type="button" class="theme-btn active" data-theme="indigo" onclick="applyTheme('indigo')">Indigo</button>
+                    <button type="button" class="theme-btn" data-theme="emerald" onclick="applyTheme('emerald')">Emerald</button>
+                    <button type="button" class="theme-btn" data-theme="platinum" onclick="applyTheme('platinum')">Platinum</button>
+                </div>
+            </div>
+
+            <hr class="border-secondary">
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-line me-2"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link active" id="navUsers"><i class="fa-solid fa-users me-2"></i> User Management</a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link d-flex align-items-center justify-content-between" id="navAccessRequests">
+                        <span><i class="fa-solid fa-key me-2 text-warning"></i> Access Requests</span>
+                        <span class="badge bg-danger font-mono" id="pendingBadge">0</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link" id="navAttackSim"><i class="fa-solid fa-bug me-2"></i> Attack Simulation</a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link" id="navReports"><i class="fa-solid fa-file-pdf me-2"></i> Reports & Audits</a>
+                </li>
+            </ul>
+            <hr class="border-secondary">
+            <button class="btn btn-outline-danger w-100" onclick="logout()"><i class="fa-solid fa-power-off"></i> Logout</button>
+        </div>
+
+        <!-- Content 1: User Management -->
+        <div class="admin-content flex-grow-1 animate-fade-in" id="content-users">
+            <h3 class="mb-4 text-white">User Management</h3>
+            
+            <div class="glass-panel p-4 mb-4">
+                <h5 class="text-accent mb-3"><i class="fa-solid fa-user-shield"></i> Registered Users</h5>
+                <div class="table-responsive">
+                    <table class="table table-cyber align-middle" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-warning mb-0"><i class="fa-solid fa-clock-rotate-left"></i> Recent Security Logs</h5>
+                    <button class="btn btn-sm btn-outline-light" onclick="window.print()">
+                        <i class="fa-solid fa-file-pdf"></i> Export Report
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-cyber align-middle" id="logsTable">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>IP Address</th>
+                                <th>Trust Score</th>
+                                <th>Action Taken</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-content flex-grow-1 animate-fade-in d-none" id="content-simulation">
+            <h3 class="mb-4 text-white">Attack Simulation & Threat Intel</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="glass-panel p-4 mb-4">
+                        <h5 class="text-danger mb-3"><i class="fa-solid fa-spider"></i> Simulate Attack</h5>
+                        <p class="text-muted small">Launch a mock attack to demonstrate the Zero Trust response.</p>
+                        
+                        <select class="form-select glass-input mb-3 border-start-0" id="attackType">
+                            <option value="sqli">SQL Injection Attack</option>
+                            <option value="brute">Brute Force Login</option>
+                            <option value="bot">Bot Behavior (Mouse/Typing Anomaly)</option>
+                            <option value="tor">Login from Tor Node</option>
+                        </select>
+                        
+                        <button class="btn btn-outline-danger w-100" onclick="simulateAttack()">
+                            <i class="fa-solid fa-fire"></i> Launch Simulation
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="glass-panel p-4 mb-4">
+                        <h5 class="text-info mb-3"><i class="fa-solid fa-shield-virus"></i> Blacklist IPs</h5>
+                        <p class="text-muted small">Manually add an IP to the Zero Trust Blacklist.</p>
+                        
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control glass-input" id="blockIp" placeholder="e.g. 192.168.1.100">
+                            <button class="btn btn-outline-info" onclick="blacklistIp()">Block IP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports and Audits Section -->
+        <div class="admin-content flex-grow-1 animate-fade-in d-none" id="content-reports">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-white mb-0"><i class="fa-solid fa-file-contract text-accent me-2"></i> Security Reports & Audits</h3>
+                <div>
+                    <button class="btn btn-cyber me-2" onclick="exportAuditCSV()"><i class="fa-solid fa-file-csv me-1"></i> Export CSV</button>
+                    <button class="btn btn-outline-light" onclick="downloadAuditPDF()"><i class="fa-solid fa-print me-1"></i> Print PDF Summary</button>
+                </div>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="glass-panel p-3 text-center">
+                        <i class="fa-solid fa-list-check fa-2x text-accent mb-2"></i>
+                        <h6 class="text-muted small mb-1">Total Audited Events</h6>
+                        <h3 class="text-white fw-bold mb-0" id="rptTotalEvents">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="glass-panel p-3 text-center">
+                        <i class="fa-solid fa-shield-cat fa-2x text-danger mb-2"></i>
+                        <h6 class="text-muted small mb-1">Blocked Threat Incidents</h6>
+                        <h3 class="text-white fw-bold mb-0" id="rptBlockedIncidents">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="glass-panel p-3 text-center">
+                        <i class="fa-solid fa-gauge-high fa-2x text-info mb-2"></i>
+                        <h6 class="text-muted small mb-1">Avg Trust Score Index</h6>
+                        <h3 class="text-white fw-bold mb-0" id="rptAvgTrust">0%</h3>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="glass-panel p-3 text-center">
+                        <i class="fa-solid fa-award fa-2x text-success mb-2"></i>
+                        <h6 class="text-muted small mb-1">Compliance Health Index</h6>
+                        <h3 class="text-white fw-bold mb-0" id="rptCompliance">0%</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Filter & Detailed Logs Table -->
+            <div class="glass-panel p-4">
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <h5 class="text-accent mb-0"><i class="fa-solid fa-clipboard-list me-2"></i> Comprehensive Audit Trail</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text glass-input"><i class="fa-solid fa-filter"></i></span>
+                            <select class="form-select glass-input" id="auditRiskFilter" onchange="filterAuditLogs()">
+                                <option value="ALL">All Risk Levels</option>
+                                <option value="High">High Risk / Blocked</option>
+                                <option value="Medium">Medium Risk</option>
+                                <option value="Low">Low Risk / Safe</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-cyber align-middle" id="auditReportTable">
+                        <thead>
+                            <tr>
+                                <th>Audit ID</th>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>IP Address</th>
+                                <th>Location / Device</th>
+                                <th>Status</th>
+                                <th>Trust Score</th>
+                                <th>Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content 4: Access Requests Management -->
+        <div class="admin-content flex-grow-1 animate-fade-in" id="content-access-requests" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="text-white mb-0"><i class="fa-solid fa-key text-warning me-2"></i> Access Escalation Requests</h3>
+                    <span class="text-muted small">Privileged Access Management (PAM) Just-In-Time Authorization Queue</span>
+                </div>
+                <button class="btn btn-sm btn-outline-info font-mono" onclick="fetchAccessRequests()"><i class="fa-solid fa-rotate me-1"></i> Refresh Queue</button>
+            </div>
+
+            <div class="glass-panel p-4 mb-4">
+                <div class="table-responsive">
+                    <table class="table table-cyber align-middle" id="accessRequestsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Timestamp</th>
+                                <th>Applicant</th>
+                                <th>Role</th>
+                                <th>Target Resource</th>
+                                <th>Trust Score</th>
+                                <th>Justification</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AI Chatbot Floating Widget -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11; width: 350px;">
+        <div id="chatbotCard" class="card glass-panel d-none mb-2">
+            <div class="card-header bg-transparent border-bottom border-secondary text-accent fw-bold">
+                <i class="fa-solid fa-robot"></i> ZT AI Assistant
+                <button type="button" class="btn-close btn-close-white float-end" onclick="toggleChatbot()" style="font-size: 10px;"></button>
+            </div>
+            <div class="card-body text-white" id="chatBody" style="height: 200px; overflow-y: auto; font-size: 0.9rem;">
+                <div class="text-muted mb-2"><strong>AI:</strong> Hello Admin. How can I help you analyze the Zero Trust network today?</div>
+            </div>
+            <div class="card-footer bg-transparent border-top border-secondary p-2">
+                <div class="input-group">
+                    <input type="text" id="chatInput" class="form-control glass-input form-control-sm" placeholder="Ask about threats..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                    <button class="btn btn-sm btn-outline-accent" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-cyber rounded-circle shadow-lg float-end" style="width: 60px; height: 60px; font-size: 1.5rem;" onclick="toggleChatbot()">
+            <i class="fa-solid fa-message"></i>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
