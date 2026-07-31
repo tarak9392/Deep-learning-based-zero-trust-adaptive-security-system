@@ -63,47 +63,26 @@ class TrustEngine:
         trust_score = 100.0
         reasons = []
 
-        if risk_class == 1:
-            trust_score -= (risk_proba * 50)
-            
-        if is_anomaly == -1:
-            trust_score -= 20
-            
-        # Add exact reasons matching presentation slides
         attacker_locations = ['Russia', 'Unknown IP', 'Tor Node']
         if location in attacker_locations:
             reasons.append(f"Login from highly suspicious location ({location})")
-            trust_score -= 10
-        elif location not in ['Anantapur', 'Hyderabad'] and not location:
-             # Just in case location is completely empty
-             reasons.append(f"Login from unrecognized location")
-             trust_score -= 5
-            
-        if device not in ['Dell Laptop', 'Office Desktop']:
+            trust_score -= 50
+
+        if device not in ['Dell Laptop', 'Office Desktop', 'Workstation', 'Unknown']:
             reasons.append(f"Unknown device ({device})")
             trust_score -= 10
-            
-        if browser not in ['Chrome', 'Edge', 'Edg', 'Unknown', 'Workstation']:
-            reasons.append(f"Different browser ({browser})")
-            trust_score -= 5
-            
+
         if failed_attempts > 2:
             trust_score -= (failed_attempts * 10)
             reasons.append(f"Many failed password attempts before success ({failed_attempts})")
-            
-        if hour < 5 or hour > 22:
-            trust_score -= 10
-            reasons.append(f"Unusual login time ({hour}:00 instead of 10:00 AM)")
-            
+
         if download_count > 3:
-            trust_score -= (download_count * 5)
+            trust_score -= (download_count * 15)
             reasons.append(f"Downloading too many files in a short time ({download_count} files)")
-            
-        if typing_speed > 100 or typing_speed < 20:
-            reasons.append("Different typing pattern (Bot behavior)")
 
         trust_score = max(0.0, min(100.0, trust_score))
         return trust_score, reasons
+
 
 # Singleton instance
 trust_engine = TrustEngine()
