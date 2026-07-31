@@ -342,13 +342,13 @@ async function verify2FACode() {
             Swal.fire({
                 icon: 'success',
                 title: '2FA Verification Successful',
-                text: 'Redirecting to Admin Control Center...',
-                timer: 1800,
+                text: 'Redirecting to Zero Trust Command Center...',
+                timer: 1400,
                 showConfirmButton: false
             }).then(() => {
-                const targetPage = (resData.role === 'Admin') ? 'admin.html' : 'dashboard.html';
-                window.location.href = targetPage;
+                window.location.href = 'dashboard.html';
             });
+
         } else {
             Swal.fire('Invalid OTP', resData.message || 'Invalid 6-digit code', 'error');
         }

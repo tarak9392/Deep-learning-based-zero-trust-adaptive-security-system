@@ -195,36 +195,90 @@ def login():
     }), 200
 
 import random
-ACTIVE_SMS_OTPS = {} # username -> { 'otp_code': '584920', 'mobile_number': '+91...', 'expires_at': datetime }
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+ACTIVE_SMS_OTPS = {} # username -> { 'otp_code': '584920', 'target': 'user@gmail.com', 'expires_at': datetime }
+
+def send_real_email_otp(target_email, otp_code, username):
+    """Dispatches a real email OTP via SMTP if credentials are set."""
+    smtp_user = getattr(Config, 'SMTP_USER', '')
+    smtp_pass = getattr(Config, 'SMTP_PASSWORD', '')
+    smtp_server = getattr(Config, 'SMTP_SERVER', 'smtp.gmail.com')
+    smtp_port = getattr(Config, 'SMTP_PORT', 587)
+
+    if smtp_user and smtp_pass:
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"🔒 Your Zero Trust Verification Code is: {otp_code}"
+            msg['From'] = f"Zero Trust Security <{smtp_user}>"
+            msg['To'] = target_email
+
+            text_content = f"Hello {username},\n\nYour 6-digit Zero Trust verification code is: {otp_code}\nValid for 5 minutes."
+            html_content = f"""
+            <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 30px; border-radius: 10px; max-width: 500px; margin: 0 auto; border: 1px solid #334155;">
+                <h2 style="color: #38bdf8; margin-top: 0;">🔒 Zero Trust Security Verification</h2>
+                <p>Hello <strong>{username}</strong>,</p>
+                <p>Your 6-digit dynamic Step-Up 2FA verification code is:</p>
+                <div style="background-color: #1e293b; color: #38bdf8; font-size: 32px; font-weight: bold; letter-spacing: 6px; text-align: center; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    {otp_code}
+                </div>
+                <p style="color: #94a3b8; font-size: 13px;">This code will expire in 5 minutes. Protect your account by never sharing this code with anyone.</p>
+                <hr style="border-color: #334155; margin-top: 20px;">
+                <p style="color: #64748b; font-size: 11px; text-align: center;">Protected by Zero Trust AI Threat Engine</p>
+            </div>
+            """
+
+            msg.attach(MIMEText(text_content, 'plain'))
+            msg.attach(MIMEText(html_content, 'html'))
+
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, target_email, msg.as_string())
+            print(f"[EMAIL OTP] Successfully dispatched real OTP email to {target_email}")
+            return True
+        except Exception as e:
+            print(f"[EMAIL OTP ERROR] Could not dispatch email via SMTP: {e}")
+            return False
+    return False
 
 @auth_bp.route('/send_otp', methods=['POST'])
 def send_otp():
     data = request.get_json() or {}
-    username = data.get('username', 'hr')
-    mobile_number = data.get('mobile_number', '+91 9876543210')
+    username = str(data.get('username') or 'admin').strip().lower()
+    target_destination = str(data.get('target') or data.get('mobile_number') or '').strip()
 
-    # Generate random 6-digit OTP code
+    user = User.query.filter_by(username=username).first()
+    email = target_destination if '@' in target_destination else (user.email if user and user.email else f"{username}@zerotrust.local")
+
     otp_code = str(random.randint(100000, 999999))
-    expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=3)
+    expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
 
     ACTIVE_SMS_OTPS[username] = {
         'otp_code': otp_code,
-        'mobile_number': mobile_number,
+        'target': email,
         'expires_at': expires_at
     }
 
+    sent_real_email = send_real_email_otp(email, otp_code, username)
+
+    msg_text = f"Real 6-digit OTP code dispatched to {email}" if sent_real_email else f"6-digit OTP code generated for {email}"
+
     return jsonify({
         "status": "success",
-        "message": f"Real-time SMS OTP dispatched to {mobile_number}",
-        "mobile_number": mobile_number,
+        "message": msg_text,
+        "target": email,
+        "sent_real_email": sent_real_email,
         "otp_code": otp_code,
-        "expires_in_seconds": 180
+        "expires_in_seconds": 300
     }), 200
 
 @auth_bp.route('/verify_2fa', methods=['POST'])
 def verify_2fa():
     data = request.get_json() or {}
-    username = data.get('username')
+    username = str(data.get('username') or '').strip().lower()
     otp_code = data.get('otp_code')
     biometric = data.get('biometric', False)
 
@@ -241,13 +295,9 @@ def verify_2fa():
         if active_otp and active_otp['otp_code'] == submitted_code:
             if active_otp['expires_at'] > datetime.datetime.utcnow():
                 is_valid = True
-        
-        # Also allow demo fallback codes
-        if submitted_code in ['849201', '123456', '000000']:
-            is_valid = True
 
         if not is_valid:
-            return jsonify({"message": "Invalid or expired OTP Code. Click 'Send OTP via SMS' to receive a fresh code."}), 400
+            return jsonify({"message": "Invalid or expired OTP Code. Please enter the exact 6-digit code sent to your email/mobile."}), 400
 
     # Generate Privileged JWT Token
     token = jwt.encode({
@@ -263,6 +313,7 @@ def verify_2fa():
         "role": user.role,
         "trust_score": 100.0
     }), 200
+
 
 @auth_bp.route('/continuous_monitor', methods=['POST'])
 def continuous_monitor():
