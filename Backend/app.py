@@ -1,4 +1,11 @@
 import os
+import sys
+
+# Ensure Backend directory is in Python path for Gunicorn on Render
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from config import Config
@@ -6,7 +13,9 @@ from models import db, User
 from auth_routes import auth_bp
 from admin_routes import admin_bp
 
-frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Frontend'))
+frontend_dir = os.path.abspath(os.path.join(backend_dir, '..', 'Frontend'))
+db_dir = os.path.abspath(os.path.join(backend_dir, '..', 'Database'))
+os.makedirs(db_dir, exist_ok=True)
 
 app = Flask(__name__, static_folder=frontend_dir, static_url_path='')
 app.config.from_object(Config)
