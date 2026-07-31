@@ -71,9 +71,15 @@ with app.app_context():
         user_obj = User(username='user', email='user@zerotrust.local', password_hash=user_pw, role='Employee', department='HR')
         db.session.add(user_obj)
 
-    db.session.commit()
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/')
+
 def index():
     return send_from_directory(frontend_dir, 'login.html')
 
