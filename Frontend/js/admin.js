@@ -2,6 +2,26 @@
 
 const API_BASE_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://127.0.0.1:5000/api' : '/api';
 
+function parseJwt(token) {
+    if (!token || typeof token !== 'string') return {};
+    try {
+        const parts = token.split('.');
+        if (parts.length < 2) return {};
+        let base64Url = parts[1];
+        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("JWT parse error:", e);
+        return {};
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -9,18 +29,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Verify Admin Role
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.role !== 'Admin') {
-            Swal.fire('Access Denied', 'You do not have Administrator privileges.', 'error').then(() => {
-                window.location.href = 'dashboard.html';
-            });
-            return;
-        }
-    } catch(e) {
-        window.location.href = 'login.html';
+    // Verify Admin Role safely
+    const payload = parseJwt(token);
+    if (payload.role !== 'Admin') {
+        Swal.fire('Access Denied', 'You do not have Administrator privileges.', 'error').then(() => {
+            window.location.href = 'dashboard.html';
+        });
+        return;
     }
+
 
     await loadUsers();
     await loadLogs();

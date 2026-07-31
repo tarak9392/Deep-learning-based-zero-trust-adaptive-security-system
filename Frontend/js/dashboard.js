@@ -17,6 +17,26 @@ let temporaryEscalations = {
 let pendingRequestsMap = {};
 
 
+function parseJwt(token) {
+    if (!token || typeof token !== 'string') return {};
+    try {
+        const parts = token.split('.');
+        if (parts.length < 2) return {};
+        let base64Url = parts[1];
+        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("JWT parse error:", e);
+        return {};
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -24,14 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Decode JWT payload
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        userRole = payload.role || 'Student';
-        username = payload.username || 'User';
-    } catch(e) {
-        console.error("JWT parse error", e);
-    }
+    // Decode JWT payload safely
+    const payload = parseJwt(token);
+    userRole = payload.role || 'Student';
+    username = payload.username || 'User';
+
 
     // Set navbar & session fingerprint elements safely
     const navUserEl = document.getElementById('navUsername');
