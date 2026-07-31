@@ -41,31 +41,62 @@ setInterval(async () => {
             })
         });
 
+        if (!response.ok) return;
         const data = await response.json();
         
+        // Save current telemetry counters before resetting
+        const currentKeys = keyPresses;
+        const currentMouse = mouseMovements;
+
         // Reset counters
         keyPresses = 0;
         mouseMovements = 0;
 
         if (data.action === 'logout') {
-            Swal.fire({
-                icon: 'error',
-                title: 'Session Terminated',
-                text: 'Your trust score dropped below the required threshold due to anomalous behavior.',
-                confirmButtonText: 'OK'
-            }).then(() => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Session Terminated',
+                    text: 'Your trust score dropped below the required threshold due to anomalous behavior.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                });
+            } else {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
-            });
+            }
+            return;
         }
         
-        // Update live trust score if gauge exists
-        const scoreElement = document.getElementById('liveTrustScore');
-        if (scoreElement) {
-            scoreElement.innerText = data.trust_score.toFixed(2) + '%';
+        // Update live trust score gauge, gates, and telemetry charts
+        if (typeof updateTrustGauge === 'function' && data.trust_score !== undefined) {
+            updateTrustGauge(data.trust_score);
+        }
+        if (typeof evaluateResourceGates === 'function') {
+            evaluateResourceGates();
+        }
+        if (typeof pushTelemetryPoint === 'function' && data.trust_score !== undefined) {
+            pushTelemetryPoint(data.trust_score);
+        }
+
+        // Update real-time WPM, Mouse Trajectory, and Idle Time DOM counters
+        const wpmEl = document.getElementById('telemetryWpm') || document.getElementById('dashWpm');
+        if (wpmEl) {
+            const estimatedWpm = Math.round((currentKeys / 5) * 6);
+            wpmEl.innerText = estimatedWpm;
+        }
+        const mouseEl = document.getElementById('telemetryMouse') || document.getElementById('dashMouse');
+        if (mouseEl) {
+            mouseEl.innerText = currentMouse;
+        }
+        const idleEl = document.getElementById('dashIdle');
+        if (idleEl) {
+            idleEl.innerText = idleTime;
         }
 
     } catch (error) {
-        console.error("Monitoring Error:", error);
+        console.error("Continuous Monitoring Error:", error);
     }
 }, AUTH_INTERVAL);

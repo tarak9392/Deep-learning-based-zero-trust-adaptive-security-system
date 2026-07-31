@@ -8,43 +8,14 @@ let threatsBlockedCount = 0;
 let currentTrustScore = 100.0;
 let userRole = 'Student';
 let username = 'User';
-let temporaryEscalations = {};
+let temporaryEscalations = {
+    email: false,
+    payroll: false,
+    hr: false,
+    production: false
+};
 let pendingRequestsMap = {};
 
-function evaluateResourceGates() {
-    const score = currentTrustScore;
-    const role = userRole;
-
-    const resources = [
-        { key: 'email', reqRole: 'Public Domain Access', reqScore: 30, badgeId: 'gateEmail' },
-        { key: 'payroll', reqRole: 'HR / Admin', reqScore: 70, badgeId: 'gatePayroll' },
-        { key: 'hr', reqRole: 'Admin Only', reqScore: 85, badgeId: 'gateHr' },
-        { key: 'production', reqRole: 'Admin Only', reqScore: 90, badgeId: 'gateProduction' }
-    ];
-
-    resources.forEach(res => {
-        const el = document.getElementById(res.badgeId);
-        if (!el) return;
-
-        const isPending = (pendingRequestsMap[res.key] === 'Pending');
-        const isEscalated = temporaryEscalations[res.key];
-
-        const isRoleOk = (res.key === 'email') || ['Admin', 'HR', 'Finance'].includes(role) || isEscalated || (res.key === 'hr' && role === 'Admin') || (res.key === 'production' && role === 'Admin');
-        const isScoreOk = (score > res.reqScore);
-        const isUnlocked = (isRoleOk && isScoreOk) || isEscalated;
-
-        if (isUnlocked) {
-            el.className = 'badge bg-success font-mono';
-            el.innerHTML = '<i class="fa-solid fa-lock-open me-1"></i> Unlocked (ABAC Granted)';
-        } else if (isPending) {
-            el.className = 'badge bg-warning text-dark font-mono';
-            el.innerHTML = '<i class="fa-solid fa-hourglass-half me-1"></i> Pending Admin Approval ⏳';
-        } else {
-            el.className = 'badge bg-danger font-mono';
-            el.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Locked (Policy Enforced)';
-        }
-    });
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
