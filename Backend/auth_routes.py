@@ -243,19 +243,23 @@ def continuous_monitor():
     except Exception as e:
         return jsonify({"message": "Invalid token"}), 401
         
-    data = request.get_json()
+    data = request.get_json() or {}
     key_presses = data.get('keyPresses', 0)
     mouse_movements = data.get('mouseMovements', 0)
     
+    # Calculate estimated WPM safely
+    estimated_wpm = (key_presses / 5) * 60 if key_presses > 0 else 60
+    
     # Calculate continuous trust score with safe baseline parameters
     score, reasons = trust_engine.evaluate_trust(
-        typing_speed=estimated_wpm if key_presses > 0 else 60,
+        typing_speed=estimated_wpm,
         mouse_movements=mouse_movements if mouse_movements > 0 else 100,
         failed_attempts=0,
         location='Anantapur',
         device='Dell Laptop',
         browser='Chrome'
     )
+
     
     action = 'allow'
     if score < 25:
