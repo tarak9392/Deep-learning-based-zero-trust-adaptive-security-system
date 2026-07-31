@@ -1,6 +1,10 @@
 // Frontend/js/dashboard.js
 
-const API_BASE_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://127.0.0.1:5000/api' : '/api';
+if (typeof window.API_BASE_URL === 'undefined') {
+    window.API_BASE_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://127.0.0.1:5000/api' : '/api';
+}
+var API_BASE_URL = window.API_BASE_URL;
+
 let telemetryLineChart = null;
 let riskDoughnutChart = null;
 let downloadCount = 0;

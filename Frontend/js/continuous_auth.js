@@ -1,8 +1,10 @@
 // Frontend/js/continuous_auth.js
 
-if (typeof API_BASE_URL === 'undefined') {
-    var API_BASE_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://127.0.0.1:5000/api' : '/api';
+if (typeof window.API_BASE_URL === 'undefined') {
+    window.API_BASE_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://127.0.0.1:5000/api' : '/api';
 }
+var API_BASE_URL = window.API_BASE_URL;
+
 
 let keyPresses = 0;
 let mouseMovements = 0;
