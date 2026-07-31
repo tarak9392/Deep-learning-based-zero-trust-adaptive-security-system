@@ -13,11 +13,18 @@ from models import db, User
 from auth_routes import auth_bp
 from admin_routes import admin_bp
 
+is_vercel = bool(os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV'))
 frontend_dir = os.path.abspath(os.path.join(backend_dir, '..', 'Frontend'))
-db_dir = os.path.abspath(os.path.join(backend_dir, '..', 'Database'))
-os.makedirs(db_dir, exist_ok=True)
+
+if not is_vercel:
+    db_dir = os.path.abspath(os.path.join(backend_dir, '..', 'Database'))
+    try:
+        os.makedirs(db_dir, exist_ok=True)
+    except Exception:
+        pass
 
 app = Flask(__name__, static_folder=frontend_dir, static_url_path='')
+
 app.config.from_object(Config)
 
 # Enable CORS for frontend communication
