@@ -290,13 +290,13 @@ async function scanFingerprintBiometric() {
                         Swal.fire({
                             icon: 'success',
                             title: 'Biometric Access Granted',
-                            text: 'Fingerprint matched. Redirecting to Admin Control Center...',
-                            timer: 1600,
+                            text: 'Fingerprint matched. Redirecting to Zero Trust Command Center...',
+                            timer: 1400,
                             showConfirmButton: false
                         }).then(() => {
-                            const targetPage = (resData.role === 'Admin') ? 'admin.html' : 'dashboard.html';
-                            window.location.href = targetPage;
+                            window.location.href = 'dashboard.html';
                         });
+
                     } else {
                         isScanningFingerprint = false;
                         if (scanBtn) {
