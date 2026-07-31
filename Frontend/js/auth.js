@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            localStorage.removeItem('token');
+
             
             const btn = document.getElementById('loginBtn');
             const originalText = btn.innerHTML;

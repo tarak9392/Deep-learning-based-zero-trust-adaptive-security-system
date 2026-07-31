@@ -83,8 +83,8 @@ class TrustEngine:
             reasons.append(f"Unknown device ({device})")
             trust_score -= 10
             
-        if browser not in ['Chrome']:
-            reasons.append(f"Different browser ({browser} instead of Chrome)")
+        if browser not in ['Chrome', 'Edge', 'Edg', 'Unknown', 'Workstation']:
+            reasons.append(f"Different browser ({browser})")
             trust_score -= 5
             
         if failed_attempts > 2:

@@ -20,6 +20,41 @@ let temporaryEscalations = {
 };
 let pendingRequestsMap = {};
 
+function switchDemoRole(newRole) {
+    userRole = newRole;
+    if (newRole === 'Admin') username = 'admin';
+    else if (newRole === 'HR') username = 'hr';
+    else if (newRole === 'Employee') username = 'user';
+    else username = 'student';
+
+    const navUserEl = document.getElementById('navUsername');
+    if (navUserEl) navUserEl.innerText = username;
+    const dashUserEl = document.getElementById('dashUserDisplay');
+    if (dashUserEl) dashUserEl.innerText = username;
+    const navRoleEl = document.getElementById('navRoleBadge');
+    if (navRoleEl) navRoleEl.innerText = userRole;
+
+    const adminLink = document.getElementById('adminLink');
+    if (adminLink) {
+        adminLink.style.display = (newRole === 'Admin') ? 'inline-block' : 'none';
+    }
+
+    evaluateResourceGates();
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'info',
+            title: `Role Switched to ${newRole}`,
+            text: `Active role updated to '${newRole}'. ABAC resource gates re-evaluated.`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    }
+}
+
+
 
 function parseJwt(token) {
     if (!token || typeof token !== 'string') return {};
