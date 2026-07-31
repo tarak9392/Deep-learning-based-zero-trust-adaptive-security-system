@@ -39,7 +39,8 @@ function parseJwt(token) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    if (!token || token === 'undefined' || token === 'null') {
+        localStorage.removeItem('token');
         window.location.href = 'login.html';
         return;
     }
@@ -48,7 +49,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const payload = parseJwt(token);
     userRole = payload.role || 'Student';
     username = payload.username || 'User';
-
 
     // Set navbar & session fingerprint elements safely
     const navUserEl = document.getElementById('navUsername');
@@ -81,16 +81,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-detect Geo location for dashboard card
     fetchGeoLocation();
 
-    // Initialize Radial Gauge & Evaluate Gates
-    updateTrustGauge(100.0);
-    evaluateResourceGates();
-    checkServerAccessApprovals();
+    // Initialize Radial Gauge & Evaluate Gates immediately
+    try {
+        updateTrustGauge(100.0);
+        evaluateResourceGates();
+        checkServerAccessApprovals();
+    } catch(e) {
+        console.error("Init gauge/gates error:", e);
+    }
 
-    // Initialize Charts
-    initCharts();
+    // Initialize Charts safely
+    try {
+        initCharts();
+    } catch(e) {
+        console.error("Init charts error:", e);
+    }
 
     // Add Initial Event Logs
-    addLogStreamEntry("SYSTEM_INIT", "127.0.0.1", 100.0, "Success", "Session Authenticated via MFA");
+    try {
+        addLogStreamEntry("SYSTEM_INIT", "127.0.0.1", 100.0, "Success", "Session Authenticated via MFA");
+    } catch(e) {}
+
 
     // Live Telemetry Loop (updates counters, telemetry chart, and gates)
     setInterval(() => {
@@ -242,6 +253,10 @@ function updateTrustGauge(score) {
 
 // Chart.js Setup
 function initCharts() {
+    if (typeof Chart === 'undefined') {
+        console.warn("Chart.js library is not available.");
+        return;
+    }
     if (telemetryLineChart) {
         telemetryLineChart.destroy();
     }
