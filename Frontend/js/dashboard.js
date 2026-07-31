@@ -149,16 +149,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 2000);
 });
 
-let temporaryEscalations = {
-    email: false,
-    payroll: false,
-    hr: false,
-    production: false
-};
-
-let pendingRequestsMap = {}; // key -> status ('Pending', 'Approved', 'Denied')
-
 async function checkServerAccessApprovals() {
+
     const token = localStorage.getItem('token');
     if (!token) return;
 
