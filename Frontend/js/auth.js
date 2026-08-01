@@ -529,6 +529,29 @@ async function sendSmsOtpToRealNumber() {
                 statusText.innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> Dispatched to ${phone} via ${providerInfo}`;
             }
 
+            // Trigger Native Mobile & System Notification Banner on device
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    try {
+                        new Notification(`📱 Zero Trust 2FA Code (${phone})`, {
+                            body: `Your OTP Verification Code is: ${generatedOtp}. Valid for 5 minutes.`,
+                            vibrate: [200, 100, 200]
+                        });
+                    } catch(e) {}
+                } else if (Notification.permission !== 'denied') {
+                    try {
+                        Notification.requestPermission().then(permission => {
+                            if (permission === 'granted') {
+                                new Notification(`📱 Zero Trust 2FA Code (${phone})`, {
+                                    body: `Your OTP Verification Code is: ${generatedOtp}. Valid for 5 minutes.`,
+                                    vibrate: [200, 100, 200]
+                                });
+                            }
+                        });
+                    } catch(e) {}
+                }
+            }
+
             // Display Interactive Mobile SMS Notification Toast
             Swal.fire({
                 icon: 'info',
