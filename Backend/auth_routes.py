@@ -4,6 +4,10 @@ from flask_bcrypt import Bcrypt
 import jwt
 import datetime
 from config import Config
+import base64
+import urllib.request
+import urllib.parse
+import json as py_json
 import sys
 import os
 
@@ -219,6 +223,89 @@ from email.mime.multipart import MIMEMultipart
 
 ACTIVE_SMS_OTPS = {} # username -> { 'otp_code': '584920', 'target': 'user@gmail.com', 'expires_at': datetime }
 
+def send_real_sms_otp(phone_number, otp_code, username):
+    """
+    Multi-Provider Real-Time SMS Dispatcher supporting:
+    1. Twilio REST API (Global)
+    2. Fast2SMS API (Indian Mobile Numbers)
+    3. Textbelt API
+    """
+    clean_phone = ''.join(c for c in str(phone_number) if c.isdigit() or c == '+')
+    if not clean_phone or len(clean_phone) < 8:
+        return False, "Invalid Phone Number"
+
+    # Provider 1: Twilio REST API
+    twilio_sid = getattr(Config, 'TWILIO_ACCOUNT_SID', '')
+    twilio_token = getattr(Config, 'TWILIO_AUTH_TOKEN', '')
+    twilio_from = getattr(Config, 'TWILIO_PHONE_NUMBER', '')
+
+    if twilio_sid and twilio_token and twilio_from:
+        try:
+            url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json"
+            post_data = urllib.parse.urlencode({
+                'To': clean_phone if clean_phone.startswith('+') else f"+{clean_phone}",
+                'From': twilio_from,
+                'Body': f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes."
+            }).encode('utf-8')
+
+            req = urllib.request.Request(url, data=post_data, method='POST')
+            auth_str = f"{twilio_sid}:{twilio_token}"
+            b64_auth = base64.b64encode(auth_str.encode('utf-8')).decode('utf-8')
+            req.add_header('Authorization', f'Basic {b64_auth}')
+            req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                if resp.status in [200, 201]:
+                    print(f"[TWILIO REAL SMS] Successfully sent OTP to {clean_phone}")
+                    return True, "Twilio SMS API"
+        except Exception as e:
+            print(f"[TWILIO ERROR] {e}")
+
+    # Provider 2: Fast2SMS API (For Indian 10-Digit Mobile Numbers)
+    fast2sms_key = getattr(Config, 'FAST2SMS_API_KEY', '')
+    if fast2sms_key:
+        try:
+            digits_only = ''.join(c for c in clean_phone if c.isdigit())[-10:]
+            url = "https://www.fast2sms.com/dev/bulkV2"
+            headers = {
+                'authorization': fast2sms_key,
+                'Content-Type': 'application/json'
+            }
+            payload = py_json.dumps({
+                "variables_values": otp_code,
+                "route": "otp",
+                "numbers": digits_only
+            }).encode('utf-8')
+
+            req = urllib.request.Request(url, data=payload, headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                if resp.status == 200:
+                    print(f"[FAST2SMS REAL SMS] Successfully sent OTP to {digits_only}")
+                    return True, "Fast2SMS API"
+        except Exception as e:
+            print(f"[FAST2SMS ERROR] {e}")
+
+    # Provider 3: Textbelt API
+    textbelt_key = getattr(Config, 'TEXTBELT_API_KEY', 'textbelt')
+    if textbelt_key and textbelt_key != 'textbelt':
+        try:
+            url = "https://textbelt.com/text"
+            payload = urllib.parse.urlencode({
+                'phone': clean_phone,
+                'message': f"Zero Trust 2FA Code for {username}: {otp_code}",
+                'key': textbelt_key
+            }).encode('utf-8')
+            req = urllib.request.Request(url, data=payload, method='POST')
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                res_json = py_json.loads(resp.read().decode('utf-8'))
+                if res_json.get('success'):
+                    print(f"[TEXTBELT REAL SMS] Successfully sent OTP to {clean_phone}")
+                    return True, "Textbelt SMS API"
+        except Exception as e:
+            print(f"[TEXTBELT ERROR] {e}")
+
+    return False, "Simulated Real-Time Messaging API"
+
 def send_real_email_otp(target_email, otp_code, username):
     """Dispatches a real email OTP via SMTP if credentials are set."""
     smtp_user = getattr(Config, 'SMTP_USER', '')
@@ -268,7 +355,7 @@ def send_otp():
     username = str(data.get('username') or 'admin').strip().lower()
     target_destination = str(data.get('target') or data.get('mobile_number') or '').strip()
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter(db.func.lower(User.username) == username).first()
     email = target_destination if '@' in target_destination else (user.email if user and user.email else f"{username}@zerotrust.local")
 
     otp_code = str(random.randint(100000, 999999))
@@ -276,19 +363,31 @@ def send_otp():
 
     ACTIVE_SMS_OTPS[username] = {
         'otp_code': otp_code,
-        'target': email,
+        'target': target_destination or email,
         'expires_at': expires_at
     }
 
+    sent_real_sms = False
+    sms_provider_name = "Simulated SMS Engine"
+    if target_destination and '@' not in target_destination:
+        sent_real_sms, sms_provider_name = send_real_sms_otp(target_destination, otp_code, username)
+
     sent_real_email = send_real_email_otp(email, otp_code, username)
 
-    msg_text = f"Real 6-digit OTP code dispatched to {email}" if sent_real_email else f"6-digit OTP code generated for {email}"
+    if sent_real_sms:
+        msg_text = f"Real-time 6-digit OTP SMS dispatched to {target_destination} via {sms_provider_name}"
+    elif sent_real_email:
+        msg_text = f"Real 6-digit OTP code dispatched to {email} via SMTP Email"
+    else:
+        msg_text = f"6-digit OTP code generated for {target_destination or email}"
 
     return jsonify({
         "status": "success",
         "message": msg_text,
-        "target": email,
+        "target": target_destination or email,
+        "sent_real_sms": sent_real_sms,
         "sent_real_email": sent_real_email,
+        "sms_provider": sms_provider_name,
         "otp_code": otp_code,
         "expires_in_seconds": 300
     }), 200

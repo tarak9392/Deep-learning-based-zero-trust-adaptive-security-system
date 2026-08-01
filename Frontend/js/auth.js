@@ -523,9 +523,10 @@ async function sendSmsOtpToRealNumber() {
 
         if (response.ok) {
             const generatedOtp = data.otp_code;
+            const providerInfo = data.sms_provider || 'Real-Time Messaging API';
             if (statusText) {
                 statusText.className = 'text-success small font-mono';
-                statusText.innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> SMS Dispatched to ${phone}`;
+                statusText.innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> Dispatched to ${phone} via ${providerInfo}`;
             }
 
             // Display Interactive Mobile SMS Notification Toast
@@ -534,9 +535,12 @@ async function sendSmsOtpToRealNumber() {
                 title: '📱 Real SMS Notification Received',
                 html: `
                     <div class="text-start p-3 bg-dark rounded border border-info font-mono">
-                        <p class="text-info fw-bold mb-1"><i class="fa-solid fa-comment-sms text-info me-1"></i> SMS Message to ${phone}:</p>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-info fw-bold"><i class="fa-solid fa-comment-sms text-info me-1"></i> SMS Message to ${phone}:</span>
+                            <span class="badge bg-secondary font-mono" style="font-size: 0.7rem;">${providerInfo}</span>
+                        </div>
                         <div class="p-2 bg-black rounded text-white small border border-secondary mb-2">
-                            "Your Zero Trust 2FA Verification Code is <strong class="text-warning fs-5">${generatedOtp}</strong>. Valid for 3 minutes."
+                            "Your Zero Trust 2FA Verification Code is <strong class="text-warning fs-5">${generatedOtp}</strong>. Valid for 5 minutes."
                         </div>
                         <button type="button" class="btn btn-sm btn-success w-100 font-mono mt-1" onclick="autoFillOtp('${generatedOtp}')">
                             <i class="fa-solid fa-paste me-1"></i> Auto-fill OTP (${generatedOtp})
