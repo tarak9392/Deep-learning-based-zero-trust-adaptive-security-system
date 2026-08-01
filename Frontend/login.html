@@ -35,19 +35,6 @@
                         <p class="text-muted small">Adaptive AI Authentication</p>
                     </div>
 
-                    <!-- Quick Demo Presets -->
-                    <div class="mb-4 bg-dark p-2 rounded border border-secondary text-center">
-                        <label class="form-label text-white small d-block mb-2 font-mono"><i class="fa-solid fa-bolt text-warning"></i> Select Login Role</label>
-                        <div class="btn-group w-100" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-info font-mono" id="btnRoleStudent" onclick="quickFillRole('student', 'student123')">
-                                <i class="fa-solid fa-graduation-cap me-1"></i> Student / User
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-accent font-mono" id="btnRoleHr" onclick="quickFillRole('hr', 'hr123456')">
-                                <i class="fa-solid fa-user-shield me-1"></i> HR / Admin
-                            </button>
-                        </div>
-                    </div>
-
                     <form id="loginForm">
                         <div class="mb-3">
                             <label class="form-label text-white small">Username / Email</label>
@@ -69,16 +56,22 @@
                         <hr class="border-secondary my-4">
                         <p class="text-accent small mb-2"><i class="fa-solid fa-microchip"></i> Context Simulation</p>
                         
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label text-white small">Location <span id="locLoader" class="spinner-border spinner-border-sm text-info ms-1" style="display: none;"></span></label>
-                                <select class="form-control form-control-sm glass-input" id="simLocation">
-                                    <option value="auto">📍 Auto-detect (Fetching...)</option>
-                                    <option value="Anantapur">Anantapur</option>
-                                    <option value="Hyderabad">Hyderabad</option>
-                                    <option value="Russia">Russia (Attacker)</option>
-                                    <option value="Unknown IP">Unknown IP (Attacker)</option>
-                                </select>
+                            <div class="col-12 mb-3">
+                                <label class="form-label text-white small d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-location-dot text-info me-1"></i> Location / City</span>
+                                    <span id="locLoader" class="spinner-border spinner-border-sm text-info ms-1" style="display: none;"></span>
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control glass-input font-mono" id="simLocation" placeholder="Detecting your location..." required>
+                                    <button type="button" class="btn btn-outline-info font-mono" onclick="fetchRealLocation(true)" title="Re-detect exact GPS / IP location">
+                                        <i class="fa-solid fa-crosshairs me-1"></i> Detect
+                                    </button>
+                                </div>
+                                <div class="mt-1 d-flex gap-2">
+                                    <span class="text-muted" style="font-size: 0.72rem;">Simulate Attack:</span>
+                                    <a href="javascript:void(0)" class="text-danger text-decoration-none font-mono" style="font-size: 0.72rem;" onclick="document.getElementById('simLocation').value='Russia'">[Russia]</a>
+                                    <a href="javascript:void(0)" class="text-warning text-decoration-none font-mono" style="font-size: 0.72rem;" onclick="document.getElementById('simLocation').value='Tor Node'">[Tor Node]</a>
+                                </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <label class="form-label text-white small">Device</label>

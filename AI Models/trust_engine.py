@@ -68,17 +68,26 @@ class TrustEngine:
             reasons.append(f"Login from highly suspicious location ({location})")
             trust_score -= 50
 
-        if device not in ['Dell Laptop', 'Office Desktop', 'Workstation', 'Unknown']:
-            reasons.append(f"Unknown device ({device})")
+        if device not in ['Dell Laptop', 'Office Desktop', 'Workstation', 'Unknown', 'auto', 'Dell', 'Desktop', 'Laptop', 'Mobile']:
+            reasons.append(f"Unrecognized device profile ({device})")
             trust_score -= 10
 
         if failed_attempts > 2:
-            trust_score -= (failed_attempts * 10)
-            reasons.append(f"Many failed password attempts before success ({failed_attempts})")
+            trust_score -= min(failed_attempts * 10, 40)
+            reasons.append(f"Multiple failed login attempts ({failed_attempts})")
 
         if download_count > 3:
             trust_score -= (download_count * 15)
-            reasons.append(f"Downloading too many files in a short time ({download_count} files)")
+            reasons.append(f"High-frequency file downloads ({download_count} files)")
+
+        # Incorporate AI Model Anomaly & Risk Predictions
+        if is_anomaly == -1 and location in attacker_locations:
+            trust_score -= 20
+            reasons.append("Behavior anomaly flagged by AI Isolation Forest model")
+
+        if risk_class == 1 and location in attacker_locations:
+            trust_score -= (risk_proba * 20)
+            reasons.append("High risk pattern classified by AI Random Forest model")
 
         trust_score = max(0.0, min(100.0, trust_score))
         return trust_score, reasons

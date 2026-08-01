@@ -53,11 +53,28 @@ with app.app_context():
         hr_user.role = 'Admin'
         hr_user.department = 'HR'
 
+    # Create / update initial rgm Admin user
+    rgm_user = User.query.filter(db.func.lower(User.username) == 'rgm').first()
+    hashed_rgm_pw = bcrypt.generate_password_hash('rgmcet123').decode('utf-8')
+    if not rgm_user:
+        rgm_user = User(username='rgm', email='rgm@zerotrust.local', password_hash=hashed_rgm_pw, role='Admin', department='Security', is_active=True)
+        db.session.add(rgm_user)
+    else:
+        rgm_user.password_hash = hashed_rgm_pw
+        rgm_user.role = 'Admin'
+        rgm_user.department = 'Security'
+        rgm_user.is_active = True
+
     # Create initial admin user
-    if not User.query.filter_by(username='admin').first():
-        hashed_pw = bcrypt.generate_password_hash('admin123').decode('utf-8')
-        admin = User(username='admin', email='admin@zerotrust.local', password_hash=hashed_pw, role='Admin', department='IT')
+    admin_user = User.query.filter(db.func.lower(User.username) == 'admin').first()
+    hashed_pw = bcrypt.generate_password_hash('admin123').decode('utf-8')
+    if not admin_user:
+        admin = User(username='admin', email='admin@zerotrust.local', password_hash=hashed_pw, role='Admin', department='IT', is_active=True)
         db.session.add(admin)
+    else:
+        admin_user.password_hash = hashed_pw
+        admin_user.role = 'Admin'
+        admin_user.is_active = True
 
     # Create initial student user
     if not User.query.filter_by(username='student').first():

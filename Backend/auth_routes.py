@@ -37,25 +37,30 @@ def calculate_initial_trust_score(fingerprint, username, failed_attempts=0, loca
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
+    data = request.get_json() or {}
+    raw_username = str(data.get('username') or '').strip()
+    username = raw_username.lower()
+    email = str(data.get('email') or '').strip().lower()
+    password = str(data.get('password') or '').strip()
     department = data.get('department', 'Guest')
     
-    if User.query.filter_by(username=username).first():
+    if not username or not password:
+        return jsonify({"message": "Username and password are required"}), 400
+
+    if User.query.filter(db.func.lower(User.username) == username).first():
         return jsonify({"message": "Username already exists"}), 400
         
-    if User.query.filter_by(email=email).first():
+    if User.query.filter(db.func.lower(User.email) == email).first():
         return jsonify({"message": "Email already registered"}), 400
         
     hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(
-        username=username, 
+        username=raw_username, 
         email=email, 
         password_hash=hashed_pw, 
         role='Student' if department in ['Student', 'Guest'] else 'Employee',
-        department=department
+        department=department,
+        is_active=True
     )
     
     db.session.add(new_user)
@@ -68,12 +73,13 @@ def ensure_demo_users():
         db.create_all()
         demo_accounts = [
             ('admin', 'Admin', 'admin123', 'Security'),
+            ('rgm', 'Admin', 'rgmcet123', 'Security'),
             ('student', 'Student', 'student123', 'Engineering'),
             ('user', 'Employee', 'user123', 'HR'),
             ('hr', 'HR', 'hr123456', 'HR')
         ]
         for uname, urole, upw, udept in demo_accounts:
-            u = User.query.filter_by(username=uname).first()
+            u = User.query.filter(db.func.lower(User.username) == uname).first()
             if not u:
                 pw_hash = bcrypt.generate_password_hash(upw).decode('utf-8')
                 db.session.add(User(username=uname, email=f"{uname}@zerotrust.local", password_hash=pw_hash, role=urole, department=udept, is_active=True))
@@ -94,36 +100,27 @@ def login():
     fingerprint = data.get('fingerprint', {})
     
     # Contextual Simulation inputs
-    location = data.get('location', 'Unknown')
-    device = data.get('device', 'Unknown')
-    browser = data.get('browser', 'Unknown')
+    raw_location = str(data.get('location') or 'Unknown').strip()
+    location = raw_location if raw_location and raw_location.lower() not in ['auto', ''] else 'Detected Location'
+    device = str(data.get('device') or 'Dell Laptop').strip()
+    browser = str(data.get('browser') or 'Chrome').strip()
 
-    user = User.query.filter_by(username=username).first()
+    # Case-insensitive user lookup
+    user = User.query.filter(db.func.lower(User.username) == username).first()
     
-    # Check failed attempts from logs
-    failed_attempts = 0
-    if user:
-        last_success = LoginLog.query.filter_by(user_id=user.id, status='Success').order_by(LoginLog.login_time.desc()).first()
-        if last_success:
-            failed_attempts = LoginLog.query.filter(LoginLog.user_id == user.id, LoginLog.status == 'Failed', LoginLog.login_time > last_success.login_time).count()
-        else:
-            failed_attempts = LoginLog.query.filter_by(user_id=user.id, status='Failed').count()
-
-    # Calculate Trust Score
-    trust_score, reasons = calculate_initial_trust_score(fingerprint, username, failed_attempts, location, device, browser)
-
     log_entry = LoginLog(
         user_id=user.id if user else 0,
         ip_address=location,
         browser=browser,
         device=device,
-        trust_score=trust_score,
+        trust_score=100.0,
         status='Failed'
     )
-    
+
+    # 1. Check Password Credential Validity First
     is_valid_pw = False
     if user:
-        if password in ['admin123', 'student123', 'user123', 'hr123456']:
+        if password in ['admin123', 'rgmcet123', 'student123', 'user123', 'hr123456'] and user.username.lower() in ['admin', 'rgm', 'student', 'user', 'hr']:
             is_valid_pw = True
         else:
             try:
@@ -136,22 +133,35 @@ def login():
         db.session.commit()
         return jsonify({"message": "Invalid username or password"}), 401
 
-    
     if not user.is_active:
         log_entry.status = 'Blocked'
         db.session.add(log_entry)
         db.session.commit()
-        return jsonify({"message": "Account is disabled"}), 403
+        return jsonify({"message": "Account is currently disabled. You can submit an access request to Administrator for unblocking.", "account_disabled": True, "username": user.username}), 403
+
+    # Check recent failed attempts (within last 15 minutes)
+    failed_attempts = 0
+    fifteen_mins_ago = datetime.datetime.utcnow() - datetime.timedelta(minutes=15)
+    last_success = LoginLog.query.filter_by(user_id=user.id, status='Success').order_by(LoginLog.login_time.desc()).first()
+    
+    if last_success and last_success.login_time > fifteen_mins_ago:
+        failed_attempts = LoginLog.query.filter(LoginLog.user_id == user.id, LoginLog.status == 'Failed', LoginLog.login_time > last_success.login_time).count()
+    else:
+        failed_attempts = LoginLog.query.filter(LoginLog.user_id == user.id, LoginLog.status == 'Failed', LoginLog.login_time >= fifteen_mins_ago).count()
+
+    # Calculate Trust Score
+    trust_score, reasons = calculate_initial_trust_score(fingerprint, user.username, failed_attempts, location, device, browser)
+    log_entry.trust_score = trust_score
 
     # Zero Trust Policy based on Trust Score or High Privilege Role
     if trust_score < 30:
         log_entry.status = 'Blocked (AI)'
         db.session.add(log_entry)
         db.session.commit()
-        return jsonify({"message": "Access blocked by AI due to high risk", "reasons": reasons}), 403
+        return jsonify({"message": "Access blocked by AI due to high risk", "reasons": reasons, "username": user.username}), 403
 
     # Require Mandatory Step-Up 2FA & Fingerprint Biometric for HR / Admin Accounts
-    if user.role == 'Admin' or user.username in ['hr', 'admin']:
+    if user.role == 'Admin' or user.username.lower() in ['hr', 'admin', 'rgm']:
         db.session.add(log_entry)
         db.session.commit()
         challenge_token = jwt.encode({
@@ -171,7 +181,15 @@ def login():
 
     if trust_score < 70:
         # Requires MFA
-        return jsonify({"requires_mfa": True, "message": "OTP required"}), 200
+        db.session.add(log_entry)
+        db.session.commit()
+        return jsonify({
+            "requires_mfa": True, 
+            "message": "Step-Up OTP Verification required due to dynamic trust score", 
+            "username": user.username,
+            "trust_score": trust_score,
+            "reasons": reasons
+        }), 200
 
     # Success
     log_entry.status = 'Success'
@@ -400,11 +418,13 @@ def download_file():
         "action": action
     }), 200
 
-# Endpoint to request temporary access escalation from Admin
+# Endpoint to request temporary access escalation / account unblock from Admin
 @auth_bp.route('/request_access', methods=['POST'])
 def request_access():
     auth_header = request.headers.get('Authorization')
+    data = request.get_json() or {}
     user_id = None
+    target_username = str(data.get('username') or '').strip().lower()
 
     if auth_header and " " in auth_header:
         token = auth_header.split(" ")[1]
@@ -418,18 +438,19 @@ def request_access():
             except Exception:
                 pass
 
-    if not user_id:
-        student_user = User.query.filter_by(username='student').first() or User.query.first()
-        if student_user:
-            user_id = student_user.id
-        else:
-            return jsonify({"message": "User session invalid"}), 401
+    user = None
+    if user_id:
+        user = User.query.get(user_id)
+    
+    if not user and target_username:
+        user = User.query.filter(db.func.lower(User.username) == target_username).first()
 
-    user = User.query.get(user_id)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        user = User.query.filter_by(username='student').first() or User.query.first()
 
-    data = request.get_json() or {}
+    if not user:
+        return jsonify({"message": "User context invalid. Please register or contact system administrator."}), 400
+
     resource_key = data.get('resource_key', 'payroll')
     resource_name = data.get('resource_name', 'Restricted Resource')
     justification = data.get('justification', 'Business Operation Required')
@@ -450,7 +471,7 @@ def request_access():
 
     return jsonify({
         "status": "success",
-        "message": "Access escalation request routed to Admin",
+        "message": "Access escalation request routed to Admin queue successfully",
         "request_id": new_req.id
     }), 201
 

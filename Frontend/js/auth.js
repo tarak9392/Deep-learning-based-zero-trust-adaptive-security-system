@@ -48,39 +48,121 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     let realLocation = 'Unknown';
 
-    // Auto-fetch real location on page load
-    async function fetchRealLocation() {
+    // Auto-fetch real exact location using HTML5 Geolocation and multi-provider IP reverse geocoding
+    async function fetchRealLocation(forceRefresh = false) {
         const loader = document.getElementById('locLoader');
         const locSelect = document.getElementById('simLocation');
         if (!locSelect) return;
         
+        // 0. Use user's saved preferred city if already stored in localStorage (unless force refreshed)
+        const savedCity = localStorage.getItem('saved_real_city');
+        if (savedCity && !forceRefresh) {
+            locSelect.value = savedCity;
+            realLocation = savedCity;
+            if (loader) loader.style.display = 'none';
+            return;
+        }
+
         if (loader) loader.style.display = 'inline-block';
-        try {
-            // Using GeoJS which is very reliable and has no CORS/rate-limit issues for basic usage
-            const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
-            const data = await response.json();
-            if (data.city) {
-                realLocation = data.city;
-                locSelect.options[0].text = `📍 Auto-detect (${realLocation})`;
-                locSelect.options[0].value = realLocation;
-            } else {
-                throw new Error("City not found in response");
-            }
-        } catch (e) {
-            console.error('Failed to fetch location, trying fallback', e);
-            try {
-                const fallbackResponse = await fetch('https://ipinfo.io/json');
-                const fallbackData = await fallbackResponse.json();
-                if (fallbackData.city) {
-                    realLocation = fallbackData.city;
+
+        const updateSelectOption = (detectedCity) => {
+            if (detectedCity) {
+                realLocation = detectedCity;
+                if (locSelect.tagName === 'INPUT') {
+                    locSelect.value = realLocation;
+                } else if (locSelect.options) {
                     locSelect.options[0].text = `📍 Auto-detect (${realLocation})`;
                     locSelect.options[0].value = realLocation;
                 }
-            } catch (fallbackError) {
-                locSelect.options[0].text = `📍 Auto-detect (Failed)`;
+                localStorage.setItem('saved_real_city', realLocation);
             }
-        } finally {
-            if (loader) loader.style.display = 'none';
+        };
+
+        // Save typed location whenever user changes it manually
+        locSelect.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (val && val !== 'Unknown' && val !== 'Russia' && val !== 'Tor Node') {
+                localStorage.setItem('saved_real_city', val);
+                realLocation = val;
+            }
+        });
+
+        // 1. Try HTML5 Browser GPS Geolocation for exact device positioning
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        // Try Nominatim reverse geocoding
+                        try {
+                            const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+                            const nomData = await nomRes.json();
+                            const nomCity = nomData.address?.city || nomData.address?.town || nomData.address?.village || nomData.address?.county || nomData.address?.state_district;
+                            if (nomCity) {
+                                updateSelectOption(nomCity);
+                                if (loader) loader.style.display = 'none';
+                                return;
+                            }
+                        } catch(nomErr) {}
+
+                        // Try BigDataCloud reverse geocoding
+                        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                        const geoData = await geoRes.json();
+                        const city = geoData.city || geoData.locality || geoData.principalSubdivision;
+                        if (city) {
+                            updateSelectOption(city);
+                            if (loader) loader.style.display = 'none';
+                            return;
+                        }
+                    } catch (err) {
+                        console.log('GPS reverse geocode fallback to IP services:', err);
+                    }
+                    fallbackIpLocation();
+                },
+                (err) => {
+                    console.log('HTML5 Geolocation prompt skipped/denied, using IP detection:', err.message);
+                    fallbackIpLocation();
+                },
+                { timeout: 5000, enableHighAccuracy: true }
+            );
+        } else {
+            fallbackIpLocation();
+        }
+
+        // 2. IP Geolocation Multi-Provider Fallback
+        async function fallbackIpLocation() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.city) {
+                    updateSelectOption(data.city);
+                    return;
+                }
+            } catch (e) {
+                try {
+                    const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                    const data = await response.json();
+                    if (data.city) {
+                        updateSelectOption(data.city);
+                        return;
+                    }
+                } catch (e2) {
+                    try {
+                        const fallbackResponse = await fetch('https://ipinfo.io/json');
+                        const fallbackData = await fallbackResponse.json();
+                        if (fallbackData.city) {
+                            updateSelectOption(fallbackData.city);
+                            return;
+                        }
+                    } catch (e3) {
+                        locSelect.options[0].text = `📍 Auto-detect (Failed)`;
+                    }
+                }
+            } finally {
+                if (loader) loader.style.display = 'none';
+            }
         }
     }
     fetchRealLocation();
@@ -145,14 +227,60 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.disabled = false;
                         return;
                     } else if (data.requires_mfa) {
-                        // Trust score was medium, requires OTP
+                        current2FAUsername = username;
+                        // Trigger OTP email/SMS generation automatically
+                        fetch(`${API_BASE_URL}/auth/send_otp`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: username })
+                        });
+
                         Swal.fire({
-                            title: 'Verification Required',
-                            text: 'Your trust score requires additional verification.',
+                            title: 'Step-Up OTP Verification Required',
+                            text: data.message || 'Your dynamic trust score requires 6-digit OTP verification.',
                             icon: 'info',
                             input: 'text',
+                            inputPlaceholder: 'Enter 6-digit OTP code',
                             showCancelButton: true,
-                            confirmButtonText: 'Verify OTP'
+                            confirmButtonText: 'Verify OTP & Log In',
+                            inputValidator: (val) => {
+                                if (!val || val.trim().length < 6) {
+                                    return 'Please enter the 6-digit OTP verification code';
+                                }
+                            }
+                        }).then(async (result) => {
+                            if (result.isConfirmed && result.value) {
+                                const otpCode = result.value.trim();
+                                try {
+                                    const vRes = await fetch(`${API_BASE_URL}/auth/verify_2fa`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            username: username,
+                                            otp_code: otpCode,
+                                            biometric: false
+                                        })
+                                    });
+                                    const vData = await vRes.json();
+                                    if (vRes.ok) {
+                                        localStorage.setItem('token', vData.token);
+                                        const targetPage = (vData.role === 'Admin' || username === 'admin' || username === 'hr') ? 'admin.html' : 'dashboard.html';
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Access Granted',
+                                            text: 'OTP Verification Successful. Redirecting...',
+                                            timer: 1400,
+                                            showConfirmButton: false
+                                        }).then(() => {
+                                            window.location.href = targetPage;
+                                        });
+                                    } else {
+                                        Swal.fire('Verification Failed', vData.message || 'Invalid OTP', 'error');
+                                    }
+                                } catch(e) {
+                                    Swal.fire('Error', 'Connection failure during OTP verification', 'error');
+                                }
+                            }
                         });
                     } else {
                         // Success, High Trust Score
@@ -182,10 +310,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         errorHtml += '</ul></div>';
                     }
 
+                    const reqUsername = data.username || username;
+
                     Swal.fire({
                         icon: 'error',
                         title: 'Access Denied',
-                        html: errorHtml
+                        html: errorHtml,
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fa-solid fa-paper-plane me-1"></i> Request Access / Unblock from Admin',
+                        cancelButtonText: 'Close'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            promptSendAccessRequest(reqUsername);
+                        }
                     });
                 }
             } catch (error) {
@@ -450,4 +587,50 @@ function autoFillOtp(code) {
         setTimeout(() => input.classList.remove('border-success'), 1200);
     }
     Swal.close();
+}
+
+function promptSendAccessRequest(username) {
+    const targetUser = username || document.getElementById('username')?.value || 'student';
+    Swal.fire({
+        title: 'Request Access / Unblock from Admin',
+        html: `<p class="small text-muted mb-2">Requesting access / account unblock for user: <strong class="text-info">${targetUser}</strong></p>`,
+        input: 'textarea',
+        inputPlaceholder: 'State your reason or justification (e.g. Account disabled during testing, requesting unblock...)',
+        showCancelButton: true,
+        confirmButtonText: 'Submit Request to Admin',
+        inputValidator: (value) => {
+            if (!value || value.trim().length < 5) {
+                return 'Please enter a valid justification (at least 5 characters)';
+            }
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const justification = result.value.trim();
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/request_access`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: targetUser,
+                        resource_key: 'login_unblock',
+                        resource_name: 'Account Access & Unblock',
+                        justification: justification,
+                        trust_score: 100.0
+                    })
+                });
+                const resData = await response.json();
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Access Request Sent',
+                        html: `<div class="text-start"><p class="text-info fw-bold mb-1"><i class="fa-solid fa-paper-plane text-info me-1"></i> Request Routed to Administrator!</p><p class="small text-muted mb-0">Applicant: <strong>${targetUser}</strong><br>Status: <span class="badge bg-warning text-dark font-mono mt-1">Pending Admin Approval</span></p></div>`
+                    });
+                } else {
+                    Swal.fire('Error', resData.message || 'Failed to submit access request.', 'error');
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Connection failure while routing access request to Admin.', 'error');
+            }
+        }
+    });
 }

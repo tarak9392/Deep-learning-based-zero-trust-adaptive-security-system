@@ -229,8 +229,26 @@ def respond_access_request():
 
     if action == 'approve':
         req_obj.status = 'Approved'
-        # Grant 2 minutes window
-        req_obj.expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=2)
+        # Grant 30 minutes active access window
+        req_obj.expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        
+        # Unblock user account and clear failed logs so user can log in immediately
+        target_user = User.query.get(req_obj.user_id) or User.query.filter(db.func.lower(User.username) == req_obj.username.lower()).first()
+        if target_user:
+            target_user.is_active = True
+            try:
+                # Log success to reset failed attempts sequence
+                reset_log = LoginLog(
+                    user_id=target_user.id,
+                    ip_address='Admin System',
+                    browser='Admin Approval',
+                    device='Zero Trust Console',
+                    trust_score=100.0,
+                    status='Success'
+                )
+                db.session.add(reset_log)
+            except Exception:
+                pass
     else:
         req_obj.status = 'Denied'
         req_obj.expires_at = None
