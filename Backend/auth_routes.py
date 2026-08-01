@@ -304,6 +304,21 @@ def send_real_sms_otp(phone_number, otp_code, username):
         except Exception as e:
             print(f"[TEXTBELT ERROR] {e}")
 
+    # Provider 4: CallMeBot WhatsApp Instant Real-Time Messaging API
+    callmebot_key = getattr(Config, 'CALLMEBOT_API_KEY', '')
+    if callmebot_key:
+        try:
+            encoded_text = urllib.parse.quote(f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes.")
+            phone_with_plus = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
+            url = f"https://api.callmebot.com/whatsapp.php?phone={phone_with_plus}&text={encoded_text}&apikey={callmebot_key}"
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                if resp.status == 200:
+                    print(f"[CALLMEBOT WHATSAPP] Successfully sent real-time message to {phone_with_plus}")
+                    return True, "CallMeBot WhatsApp API"
+        except Exception as e:
+            print(f"[CALLMEBOT ERROR] {e}")
+
     return False, "Simulated Real-Time Messaging API"
 
 def send_real_email_otp(target_email, otp_code, username):
