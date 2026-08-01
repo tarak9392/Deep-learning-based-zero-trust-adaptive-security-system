@@ -505,6 +505,9 @@ async function sendSmsOtpToRealNumber() {
         return;
     }
 
+    const keyInput = document.getElementById('callmebotKeyInput');
+    const callmebotKey = keyInput ? keyInput.value.trim() : '';
+
     if (sendBtn) {
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Sending...';
@@ -516,7 +519,8 @@ async function sendSmsOtpToRealNumber() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 username: current2FAUsername || 'hr',
-                mobile_number: phone
+                mobile_number: phone,
+                callmebot_key: callmebotKey
             })
         });
         const data = await response.json();

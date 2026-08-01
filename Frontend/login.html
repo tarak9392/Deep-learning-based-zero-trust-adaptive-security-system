@@ -176,14 +176,17 @@
                         <div class="tab-pane fade" id="mfa-otp-pane" role="tabpanel">
                             <div class="mb-3 text-start">
                                 <label class="form-label text-white small font-mono"><i class="fa-solid fa-mobile-screen text-info me-1"></i> Real Mobile Phone Number</label>
-                                <div class="input-group mb-2">
-                                    <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="+91 98765 43210" value="+91 98765 43210">
+                                <div class="input-group mb-1">
+                                    <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="+91 98765 43210" value="+91 9347860338">
                                     <button class="btn btn-sm btn-outline-info font-mono" type="button" id="btnSendSmsOtp" onclick="sendSmsOtpToRealNumber()">
                                         <i class="fa-solid fa-paper-plane me-1"></i> Send OTP
                                     </button>
                                 </div>
-                                <span class="text-muted small font-mono" style="font-size: 0.75rem;" id="smsStatusText">
-                                    <i class="fa-solid fa-info-circle me-1"></i> Code will be dispatched via real-time SMS simulation.
+                                <div class="mb-2">
+                                    <input type="text" class="form-control glass-input font-mono form-control-sm" id="callmebotKeyInput" placeholder="CallMeBot Key (Optional for WhatsApp Text)">
+                                </div>
+                                <span class="text-muted small font-mono" style="font-size: 0.73rem;" id="smsStatusText">
+                                    <i class="fa-solid fa-info-circle me-1"></i> Enter phone number to send real-time 2FA OTP message.
                                 </span>
                             </div>
 

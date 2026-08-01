@@ -223,18 +223,34 @@ from email.mime.multipart import MIMEMultipart
 
 ACTIVE_SMS_OTPS = {} # username -> { 'otp_code': '584920', 'target': 'user@gmail.com', 'expires_at': datetime }
 
-def send_real_sms_otp(phone_number, otp_code, username):
+def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
     """
     Multi-Provider Real-Time SMS Dispatcher supporting:
-    1. Twilio REST API (Global)
-    2. Fast2SMS API (Indian Mobile Numbers)
-    3. Textbelt API
+    1. CallMeBot WhatsApp Instant Real-Time Messaging API
+    2. Twilio REST API (Global)
+    3. Fast2SMS API (Indian Mobile Numbers)
+    4. Textbelt API
     """
     clean_phone = ''.join(c for c in str(phone_number) if c.isdigit() or c == '+')
     if not clean_phone or len(clean_phone) < 8:
         return False, "Invalid Phone Number"
 
-    # Provider 1: Twilio REST API
+    # Provider 1: CallMeBot WhatsApp Instant Real-Time Messaging API
+    callmebot_key = req_callmebot_key or getattr(Config, 'CALLMEBOT_API_KEY', '')
+    if callmebot_key:
+        try:
+            encoded_text = urllib.parse.quote(f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes.")
+            phone_with_plus = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
+            url = f"https://api.callmebot.com/whatsapp.php?phone={phone_with_plus}&text={encoded_text}&apikey={callmebot_key}"
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                if resp.status == 200:
+                    print(f"[CALLMEBOT WHATSAPP] Successfully sent real-time message to {phone_with_plus}")
+                    return True, "CallMeBot WhatsApp API"
+        except Exception as e:
+            print(f"[CALLMEBOT ERROR] {e}")
+
+    # Provider 2: Twilio REST API
     twilio_sid = getattr(Config, 'TWILIO_ACCOUNT_SID', '')
     twilio_token = getattr(Config, 'TWILIO_AUTH_TOKEN', '')
     twilio_from = getattr(Config, 'TWILIO_PHONE_NUMBER', '')
@@ -261,7 +277,7 @@ def send_real_sms_otp(phone_number, otp_code, username):
         except Exception as e:
             print(f"[TWILIO ERROR] {e}")
 
-    # Provider 2: Fast2SMS API (For Indian 10-Digit Mobile Numbers)
+    # Provider 3: Fast2SMS API (For Indian 10-Digit Mobile Numbers)
     fast2sms_key = getattr(Config, 'FAST2SMS_API_KEY', '')
     if fast2sms_key:
         try:
@@ -285,7 +301,7 @@ def send_real_sms_otp(phone_number, otp_code, username):
         except Exception as e:
             print(f"[FAST2SMS ERROR] {e}")
 
-    # Provider 3: Textbelt API
+    # Provider 4: Textbelt API
     textbelt_key = getattr(Config, 'TEXTBELT_API_KEY', 'textbelt')
     if textbelt_key and textbelt_key != 'textbelt':
         try:
@@ -303,21 +319,6 @@ def send_real_sms_otp(phone_number, otp_code, username):
                     return True, "Textbelt SMS API"
         except Exception as e:
             print(f"[TEXTBELT ERROR] {e}")
-
-    # Provider 4: CallMeBot WhatsApp Instant Real-Time Messaging API
-    callmebot_key = getattr(Config, 'CALLMEBOT_API_KEY', '')
-    if callmebot_key:
-        try:
-            encoded_text = urllib.parse.quote(f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes.")
-            phone_with_plus = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
-            url = f"https://api.callmebot.com/whatsapp.php?phone={phone_with_plus}&text={encoded_text}&apikey={callmebot_key}"
-            req = urllib.request.Request(url, method='GET')
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                if resp.status == 200:
-                    print(f"[CALLMEBOT WHATSAPP] Successfully sent real-time message to {phone_with_plus}")
-                    return True, "CallMeBot WhatsApp API"
-        except Exception as e:
-            print(f"[CALLMEBOT ERROR] {e}")
 
     return False, "Simulated Real-Time Messaging API"
 
@@ -384,8 +385,9 @@ def send_otp():
 
     sent_real_sms = False
     sms_provider_name = "Simulated SMS Engine"
+    callmebot_key = data.get('callmebot_key') or data.get('apikey')
     if target_destination and '@' not in target_destination:
-        sent_real_sms, sms_provider_name = send_real_sms_otp(target_destination, otp_code, username)
+        sent_real_sms, sms_provider_name = send_real_sms_otp(target_destination, otp_code, username, req_callmebot_key=callmebot_key)
 
     sent_real_email = send_real_email_otp(email, otp_code, username)
 
