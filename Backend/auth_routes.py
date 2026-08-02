@@ -302,24 +302,23 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
         except Exception as e:
             print(f"[FAST2SMS ERROR] {e}")
 
-    # Provider 4: Textbelt API
-    textbelt_key = getattr(Config, 'TEXTBELT_API_KEY', 'textbelt')
-    if textbelt_key and textbelt_key != 'textbelt':
-        try:
-            url = "https://textbelt.com/text"
-            payload = urllib.parse.urlencode({
-                'phone': clean_phone,
-                'message': f"Zero Trust 2FA Code for {username}: {otp_code}",
-                'key': textbelt_key
-            }).encode('utf-8')
-            req = urllib.request.Request(url, data=payload, method='POST')
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                res_json = py_json.loads(resp.read().decode('utf-8'))
-                if res_json.get('success'):
-                    print(f"[TEXTBELT REAL SMS] Successfully sent OTP to {clean_phone}")
-                    return True, "Textbelt SMS API"
-        except Exception as e:
-            print(f"[TEXTBELT ERROR] {e}")
+    # Provider 4: Textbelt API (Attempts key or default 'textbelt' 1-free-sms/day quota)
+    textbelt_key = getattr(Config, 'TEXTBELT_API_KEY', '') or 'textbelt'
+    try:
+        url = "https://textbelt.com/text"
+        payload = urllib.parse.urlencode({
+            'phone': clean_phone if clean_phone.startswith('+') else f"+{clean_phone}",
+            'message': f"🔒 Zero Trust 2FA Code for {username}: {otp_code}. Valid 5 mins.",
+            'key': textbelt_key
+        }).encode('utf-8')
+        req = urllib.request.Request(url, data=payload, method='POST')
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            res_json = py_json.loads(resp.read().decode('utf-8'))
+            if res_json.get('success'):
+                print(f"[TEXTBELT REAL SMS] Successfully sent OTP to {clean_phone}")
+                return True, "Textbelt SMS API"
+    except Exception as e:
+        print(f"[TEXTBELT ERROR] {e}")
 
     return False, "Simulated Real-Time Messaging API"
 

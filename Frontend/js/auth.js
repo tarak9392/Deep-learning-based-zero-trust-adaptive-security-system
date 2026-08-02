@@ -573,55 +573,48 @@ async function sendSmsOtpToRealNumber() {
 
         if (response.ok) {
             const generatedOtp = data.otp_code;
-            const providerInfo = data.sms_provider || 'Real-Time Messaging API';
+            const providerInfo = data.sms_provider || 'Real-Time Messaging Gateway';
+            const sentRealSms = data.sent_real_sms;
+
+            // Console log for developer/demo reference (never revealed directly on 2FA UI modal)
+            console.log(`%c[ZeroTrust 2FA OTP] Code for ${phone}: ${generatedOtp}`, 'color: #38bdf8; font-weight: bold; font-size: 14px;');
+
             if (statusText) {
                 statusText.className = 'text-success small font-mono';
-                statusText.innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> Dispatched to ${phone} via ${providerInfo}`;
+                statusText.innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> Dispatched to ${phone} ${sentRealSms ? 'via ' + providerInfo : ''}`;
             }
 
-            // Trigger Native Mobile & System Notification Banner on device
-            if ('Notification' in window) {
-                if (Notification.permission === 'granted') {
-                    try {
-                        new Notification(`📱 Zero Trust 2FA Code (${phone})`, {
-                            body: `Your OTP Verification Code is: ${generatedOtp}. Valid for 5 minutes.`,
-                            vibrate: [200, 100, 200]
-                        });
-                    } catch(e) {}
-                } else if (Notification.permission !== 'denied') {
-                    try {
-                        Notification.requestPermission().then(permission => {
-                            if (permission === 'granted') {
-                                new Notification(`📱 Zero Trust 2FA Code (${phone})`, {
-                                    body: `Your OTP Verification Code is: ${generatedOtp}. Valid for 5 minutes.`,
-                                    vibrate: [200, 100, 200]
-                                });
-                            }
-                        });
-                    } catch(e) {}
-                }
+            // Trigger Native Device Notification if permission granted
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(`🔒 Zero Trust Security 2FA`, {
+                        body: `Verification code dispatched to ${phone}. Check your messages.`,
+                        icon: '/static/favicon.ico'
+                    });
+                } catch(e) {}
             }
 
-            // Display Interactive Mobile SMS Notification Toast
+            // Display Professional Real-Time 2FA Security Toast (Hides secret code from screen)
             Swal.fire({
-                icon: 'info',
-                title: '📱 Real SMS Notification Received',
+                icon: sentRealSms ? 'success' : 'info',
+                title: '📱 2FA Code Dispatched',
                 html: `
                     <div class="text-start p-3 bg-dark rounded border border-info font-mono">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-info fw-bold"><i class="fa-solid fa-comment-sms text-info me-1"></i> SMS Message to ${phone}:</span>
-                            <span class="badge bg-secondary font-mono" style="font-size: 0.7rem;">${providerInfo}</span>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-info fw-bold"><i class="fa-solid fa-comment-sms text-info me-1"></i> Recipient: ${phone}</span>
+                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-info'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : 'Real SMS Gateway'}</span>
                         </div>
                         <div class="p-2 bg-black rounded text-white small border border-secondary mb-2">
-                            "Your Zero Trust 2FA Verification Code is <strong class="text-warning fs-5">${generatedOtp}</strong>. Valid for 5 minutes."
+                            <i class="fa-solid fa-paper-plane text-warning me-1"></i> A 6-digit OTP verification code has been dispatched to <strong>${phone}</strong>. Please check your mobile SMS / WhatsApp inbox.
                         </div>
-                        <button type="button" class="btn btn-sm btn-success w-100 font-mono mt-1" onclick="autoFillOtp('${generatedOtp}')">
-                            <i class="fa-solid fa-paste me-1"></i> Auto-fill OTP (${generatedOtp})
-                        </button>
+                        <div class="text-muted text-center" style="font-size: 0.75rem;">
+                            Code is valid for 5 minutes. Do not share your 2FA OTP with anyone.
+                        </div>
                     </div>
                 `,
-                showConfirmButton: false,
-                timer: 10000
+                showConfirmButton: true,
+                confirmButtonText: 'Enter Received 6-Digit Code',
+                confirmButtonColor: '#0ea5e9'
             });
 
             // Resend timer countdown
