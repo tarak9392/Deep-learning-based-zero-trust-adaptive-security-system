@@ -600,25 +600,16 @@ async function sendSmsOtpToRealNumber() {
                     <div class="text-start p-3 bg-dark rounded border border-info font-mono">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-info fw-bold"><i class="fa-solid fa-mobile-screen text-info me-1"></i> Recipient: ${phone}</span>
-                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-warning text-dark'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : 'Server Push Gateway'}</span>
+                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-info text-dark'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : '2FA Gateway'}</span>
                         </div>
                         
-                        ${sentRealSms ? `
-                            <div class="p-2 bg-black rounded text-success small border border-success mb-2">
-                                <i class="fa-solid fa-circle-check me-1"></i> Real-time automated message pushed to <strong>${phone}</strong> via <strong>${providerInfo}</strong>. Check your mobile SMS inbox.
-                            </div>
-                        ` : `
-                            <div class="p-2 bg-black rounded text-white small border border-secondary mb-2">
-                                <i class="fa-solid fa-paper-plane text-warning me-1"></i> Server pushed 2FA dispatch request to mobile gateway for <strong>${phone}</strong>.
-                            </div>
-                            <div class="text-center p-2 rounded bg-black border border-info">
-                                <span class="text-muted small">Demo / Testing 2FA Code:</span>
-                                <div class="fs-4 text-warning fw-bold font-mono tracking-widest my-1">${generatedOtp}</div>
-                                <button type="button" class="btn btn-xs btn-info font-mono text-dark py-1 px-3 fw-bold" onclick="autoFillOtp('${generatedOtp}')">
-                                    <i class="fa-solid fa-paste me-1"></i> Auto-fill OTP
-                                </button>
-                            </div>
-                        `}
+                        <div class="p-3 bg-black rounded text-white small border border-secondary mb-2">
+                            <i class="fa-solid fa-paper-plane text-warning me-2"></i> A 6-digit verification code has been dispatched to <strong>${phone}</strong>. Please check your SMS / WhatsApp inbox.
+                        </div>
+                        
+                        <div class="text-muted text-center small mt-2" style="font-size: 0.75rem;">
+                            Code is valid for 5 minutes. Protect your account by keeping this code private.
+                        </div>
                     </div>
                 `,
                 showConfirmButton: true,
