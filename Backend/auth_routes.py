@@ -243,8 +243,10 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
             encoded_text = urllib.parse.quote(f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes.")
             phone_with_plus = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
             url = f"https://api.callmebot.com/whatsapp.php?phone={phone_with_plus}&text={encoded_text}&apikey={callmebot_key}"
-            req = urllib.request.Request(url, method='GET')
-            with urllib.request.urlopen(req, timeout=8) as resp:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}, method='GET')
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                res_body = resp.read().decode('utf-8', errors='ignore')
+                print(f"[CALLMEBOT RESPONSE] Status: {resp.status}, Body: {res_body[:100]}")
                 if resp.status == 200:
                     print(f"[CALLMEBOT WHATSAPP] Successfully sent real-time message to {phone_with_plus}")
                     return True, "CallMeBot WhatsApp API"

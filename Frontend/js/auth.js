@@ -552,7 +552,13 @@ async function sendSmsOtpToRealNumber() {
     }
 
     const keyInput = document.getElementById('callmebotKeyInput');
-    const callmebotKey = keyInput ? keyInput.value.trim() : '';
+    let callmebotKey = keyInput ? keyInput.value.trim() : '';
+    if (!callmebotKey) {
+        callmebotKey = localStorage.getItem('callmebot_api_key') || '';
+        if (callmebotKey && keyInput) keyInput.value = callmebotKey;
+    } else {
+        localStorage.setItem('callmebot_api_key', callmebotKey);
+    }
 
     if (sendBtn) {
         sendBtn.disabled = true;
