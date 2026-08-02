@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 0. Use user's saved preferred city if already stored in localStorage (unless force refreshed)
         const savedCity = localStorage.getItem('saved_real_city');
-        if (savedCity && !forceRefresh) {
+        if (savedCity && savedCity !== 'Unknown' && savedCity !== 'Detecting your location...' && !forceRefresh) {
             locSelect.value = savedCity;
             realLocation = savedCity;
             if (loader) loader.style.display = 'none';
@@ -95,37 +95,60 @@ document.addEventListener('DOMContentLoaded', () => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
 
-                        // Try Nominatim reverse geocoding
+                        // 1a. Try OpenStreetMap Nominatim reverse geocoding
                         try {
-                            const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-                            const nomData = await nomRes.json();
-                            const nomCity = nomData.address?.city || nomData.address?.town || nomData.address?.village || nomData.address?.county || nomData.address?.state_district;
-                            if (nomCity) {
-                                updateSelectOption(nomCity);
-                                if (loader) loader.style.display = 'none';
-                                return;
+                            const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+                                headers: { 'Accept-Language': 'en' }
+                            });
+                            if (nomRes.ok) {
+                                const nomData = await nomRes.json();
+                                const addr = nomData.address || {};
+                                const place = addr.city || addr.town || addr.village || addr.suburb || addr.neighbourhood || addr.municipality || addr.district || addr.county || addr.state_district;
+                                const state = addr.state;
+                                let formatted = place;
+                                if (place && state && !place.toLowerCase().includes(state.toLowerCase())) {
+                                    formatted = `${place}, ${state}`;
+                                }
+                                if (formatted) {
+                                    updateSelectOption(formatted);
+                                    if (loader) loader.style.display = 'none';
+                                    return;
+                                }
                             }
-                        } catch(nomErr) {}
+                        } catch(nomErr) {
+                            console.warn('Nominatim reverse geocode error:', nomErr);
+                        }
 
-                        // Try BigDataCloud reverse geocoding
-                        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-                        const geoData = await geoRes.json();
-                        const city = geoData.city || geoData.locality || geoData.principalSubdivision;
-                        if (city) {
-                            updateSelectOption(city);
-                            if (loader) loader.style.display = 'none';
-                            return;
+                        // 1b. Try BigDataCloud reverse geocoding
+                        try {
+                            const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                            if (geoRes.ok) {
+                                const geoData = await geoRes.json();
+                                const place = geoData.city || geoData.locality || geoData.principalSubdivision;
+                                const state = geoData.principalSubdivision;
+                                let formatted = place;
+                                if (place && state && place !== state && !place.toLowerCase().includes(state.toLowerCase())) {
+                                    formatted = `${place}, ${state}`;
+                                }
+                                if (formatted) {
+                                    updateSelectOption(formatted);
+                                    if (loader) loader.style.display = 'none';
+                                    return;
+                                }
+                            }
+                        } catch (bdcErr) {
+                            console.warn('BigDataCloud reverse geocode error:', bdcErr);
                         }
                     } catch (err) {
-                        console.log('GPS reverse geocode fallback to IP services:', err);
+                        console.warn('GPS reverse geocode fallback to IP services:', err);
                     }
                     fallbackIpLocation();
                 },
                 (err) => {
-                    console.log('HTML5 Geolocation prompt skipped/denied, using IP detection:', err.message);
+                    console.log('HTML5 Geolocation prompt skipped/denied/timed out, using IP detection:', err.message);
                     fallbackIpLocation();
                 },
-                { timeout: 5000, enableHighAccuracy: true }
+                { timeout: 8000, maximumAge: 0, enableHighAccuracy: true }
             );
         } else {
             fallbackIpLocation();
@@ -133,38 +156,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. IP Geolocation Multi-Provider Fallback
         async function fallbackIpLocation() {
-            try {
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-                if (data.city) {
-                    updateSelectOption(data.city);
-                    return;
+            const providers = [
+                async () => {
+                    const res = await fetch('https://ipapi.co/json/');
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.city) return data.region ? `${data.city}, ${data.region}` : data.city;
+                    return null;
+                },
+                async () => {
+                    const res = await fetch('https://ipwho.is/');
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.success && data.city) return data.region ? `${data.city}, ${data.region}` : data.city;
+                    return null;
+                },
+                async () => {
+                    const res = await fetch('https://freeipapi.com/api/json');
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.cityName) return data.regionName ? `${data.cityName}, ${data.regionName}` : data.cityName;
+                    return null;
+                },
+                async () => {
+                    const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.city) return data.region ? `${data.city}, ${data.region}` : data.city;
+                    return null;
+                },
+                async () => {
+                    const res = await fetch('https://ipinfo.io/json');
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.city) return data.region ? `${data.city}, ${data.region}` : data.city;
+                    return null;
                 }
-            } catch (e) {
+            ];
+
+            for (const provider of providers) {
                 try {
-                    const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                    const data = await response.json();
-                    if (data.city) {
-                        updateSelectOption(data.city);
+                    const loc = await provider();
+                    if (loc) {
+                        updateSelectOption(loc);
+                        if (loader) loader.style.display = 'none';
                         return;
                     }
-                } catch (e2) {
-                    try {
-                        const fallbackResponse = await fetch('https://ipinfo.io/json');
-                        const fallbackData = await fallbackResponse.json();
-                        if (fallbackData.city) {
-                            updateSelectOption(fallbackData.city);
-                            return;
-                        }
-                    } catch (e3) {
-                        locSelect.options[0].text = `📍 Auto-detect (Failed)`;
-                    }
+                } catch (e) {
+                    console.warn('IP location provider error:', e);
                 }
-            } finally {
-                if (loader) loader.style.display = 'none';
             }
+
+            if (loader) loader.style.display = 'none';
         }
     }
+    window.fetchRealLocation = fetchRealLocation;
     fetchRealLocation();
 
     if (loginForm) {

@@ -105,7 +105,8 @@ def login():
     
     # Contextual Simulation inputs
     raw_location = str(data.get('location') or 'Unknown').strip()
-    location = raw_location if raw_location and raw_location.lower() not in ['auto', ''] else 'Detected Location'
+    invalid_locs = ['auto', 'detecting your location...', 'auto-detecting...', 'detecting...', 'unknown', '']
+    location = raw_location if raw_location and raw_location.lower() not in invalid_locs else 'Detected Location'
     device = str(data.get('device') or 'Dell Laptop').strip()
     browser = str(data.get('browser') or 'Chrome').strip()
 

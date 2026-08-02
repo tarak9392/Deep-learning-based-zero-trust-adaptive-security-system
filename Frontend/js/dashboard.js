@@ -226,16 +226,58 @@ function updateBadge(badgeId, isUnlocked, key) {
 
 async function fetchGeoLocation() {
     const geoEl = document.getElementById('dashGeo');
-    try {
-        const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
-        const data = await response.json();
-        if (data.city) {
-            geoEl.innerText = `${data.city}, ${data.country_code || ''}`;
-        } else {
-            geoEl.innerText = 'Hyderabad, IN';
+    if (!geoEl) return;
+
+    // 1. Check if we have a real saved city from login or past detection
+    const savedCity = localStorage.getItem('saved_real_city');
+    if (savedCity && savedCity !== 'Unknown' && savedCity !== 'Detecting your location...') {
+        geoEl.innerText = savedCity;
+        return;
+    }
+
+    // 2. Multi-provider IP Geolocation
+    const providers = [
+        async () => {
+            const res = await fetch('https://ipapi.co/json/');
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (data.city) return `${data.city}, ${data.region || data.country_code || ''}`;
+            return null;
+        },
+        async () => {
+            const res = await fetch('https://ipwho.is/');
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (data.success && data.city) return `${data.city}, ${data.region || data.country_code || ''}`;
+            return null;
+        },
+        async () => {
+            const res = await fetch('https://freeipapi.com/api/json');
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (data.cityName) return `${data.cityName}, ${data.regionName || data.countryCode || ''}`;
+            return null;
+        },
+        async () => {
+            const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (data.city) return `${data.city}, ${data.country_code || ''}`;
+            return null;
         }
-    } catch(e) {
-        geoEl.innerText = 'Hyderabad, IN';
+    ];
+
+    for (const provider of providers) {
+        try {
+            const loc = await provider();
+            if (loc) {
+                geoEl.innerText = loc;
+                localStorage.setItem('saved_real_city', loc);
+                return;
+            }
+        } catch (e) {
+            console.warn('Dashboard Geo error:', e);
+        }
     }
 }
 
