@@ -573,47 +573,58 @@ async function sendSmsOtpToRealNumber() {
 
         if (response.ok) {
             const generatedOtp = data.otp_code;
-            const providerInfo = data.sms_provider || 'Real-Time Messaging Gateway';
+            const providerInfo = data.sms_provider || 'Simulated Gateway';
             const sentRealSms = data.sent_real_sms;
 
-            // Console log for developer/demo reference (never revealed directly on 2FA UI modal)
+            // Log code to browser console for developer reference
             console.log(`%c[ZeroTrust 2FA OTP] Code for ${phone}: ${generatedOtp}`, 'color: #38bdf8; font-weight: bold; font-size: 14px;');
 
             if (statusText) {
-                statusText.className = 'text-success small font-mono';
-                statusText.innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> Dispatched to ${phone} ${sentRealSms ? 'via ' + providerInfo : ''}`;
+                statusText.className = sentRealSms ? 'text-success small font-mono' : 'text-warning small font-mono';
+                statusText.innerHTML = sentRealSms 
+                    ? `<i class="fa-solid fa-check-circle me-1"></i> Dispatched to ${phone} via ${providerInfo}`
+                    : `<i class="fa-solid fa-triangle-exclamation me-1"></i> Dispatched via Gateway (${providerInfo})`;
             }
 
-            // Trigger Native Device Notification if permission granted
-            if ('Notification' in window && Notification.permission === 'granted') {
-                try {
-                    new Notification(`🔒 Zero Trust Security 2FA`, {
-                        body: `Verification code dispatched to ${phone}. Check your messages.`,
-                        icon: '/static/favicon.ico'
-                    });
-                } catch(e) {}
-            }
+            const cleanDigits = phone.replace(/[^0-9]/g, '');
+            const waUrl = `https://wa.me/${cleanDigits}?text=${encodeURIComponent(`🔒 Your Zero Trust 2FA Code is: ${generatedOtp}`)}`;
 
-            // Display Professional Real-Time 2FA Security Toast (Hides secret code from screen)
+            // Display Interactive Real-Time 2FA Dispatch Modal
             Swal.fire({
                 icon: sentRealSms ? 'success' : 'info',
-                title: '📱 2FA Code Dispatched',
+                title: sentRealSms ? '📱 Real 2FA SMS Sent' : '📱 2FA Code Generated',
                 html: `
                     <div class="text-start p-3 bg-dark rounded border border-info font-mono">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-info fw-bold"><i class="fa-solid fa-comment-sms text-info me-1"></i> Recipient: ${phone}</span>
-                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-info'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : 'Real SMS Gateway'}</span>
+                            <span class="text-info fw-bold"><i class="fa-solid fa-mobile-screen text-info me-1"></i> Recipient: ${phone}</span>
+                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-warning text-dark'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : 'Gateway Mode'}</span>
                         </div>
-                        <div class="p-2 bg-black rounded text-white small border border-secondary mb-2">
-                            <i class="fa-solid fa-paper-plane text-warning me-1"></i> A 6-digit OTP verification code has been dispatched to <strong>${phone}</strong>. Please check your mobile SMS / WhatsApp inbox.
-                        </div>
-                        <div class="text-muted text-center" style="font-size: 0.75rem;">
-                            Code is valid for 5 minutes. Do not share your 2FA OTP with anyone.
-                        </div>
+                        
+                        ${sentRealSms ? `
+                            <div class="p-2 bg-black rounded text-success small border border-success mb-2">
+                                <i class="fa-solid fa-circle-check me-1"></i> Real-time message dispatched to <strong>${phone}</strong>. Please check your SMS / WhatsApp inbox.
+                            </div>
+                        ` : `
+                            <div class="p-2 bg-black rounded text-white small border border-secondary mb-2">
+                                <i class="fa-solid fa-info-circle text-warning me-1"></i> SMS gateway dispatch triggered for <strong>${phone}</strong>.
+                            </div>
+                            <div class="d-grid gap-2 mb-2">
+                                <a href="${waUrl}" target="_blank" class="btn btn-sm btn-outline-success font-mono text-decoration-none">
+                                    <i class="fa-brands fa-whatsapp me-1"></i> Send OTP to +${cleanDigits} via WhatsApp
+                                </a>
+                            </div>
+                            <div class="text-center p-2 rounded bg-black border border-info">
+                                <span class="text-muted small">Demo / Testing Preview Code:</span>
+                                <div class="fs-4 text-warning fw-bold font-mono tracking-widest my-1">${generatedOtp}</div>
+                                <button type="button" class="btn btn-xs btn-info font-mono text-dark py-1 px-3 fw-bold" onclick="autoFillOtp('${generatedOtp}')">
+                                    <i class="fa-solid fa-paste me-1"></i> Auto-fill OTP
+                                </button>
+                            </div>
+                        `}
                     </div>
                 `,
                 showConfirmButton: true,
-                confirmButtonText: 'Enter Received 6-Digit Code',
+                confirmButtonText: 'Enter 6-Digit OTP',
                 confirmButtonColor: '#0ea5e9'
             });
 
