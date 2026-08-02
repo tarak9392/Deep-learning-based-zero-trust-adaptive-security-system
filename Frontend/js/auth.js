@@ -666,6 +666,68 @@ async function sendSmsOtpToRealNumber() {
     }
 }
 
+async function requestWhatsappBotOtp() {
+    const phoneInput = document.getElementById('hrRealPhoneInput');
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    const keyInput = document.getElementById('callmebotKeyInput');
+    let callmebotKey = keyInput ? keyInput.value.trim() : (localStorage.getItem('callmebot_api_key') || '');
+    
+    if (!phone || phone.length < 8) {
+        Swal.fire('Phone Number Required', 'Please enter your mobile phone number to receive your OTP via WhatsApp Bot.', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/send_otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: current2FAUsername || 'hr',
+                mobile_number: phone,
+                callmebot_key: callmebotKey
+            })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            const generatedOtp = data.otp_code;
+            const cleanDigits = phone.replace(/[^0-9]/g, '');
+            const waUrl = `https://wa.me/${cleanDigits}?text=${encodeURIComponent(`🔒 Your Zero Trust 2FA Verification Code for ${current2FAUsername || 'User'} is: ${generatedOtp}`)}`;
+
+            // Open WhatsApp directly with prefilled OTP request message so user receives the code in WhatsApp chat!
+            window.open(waUrl, '_blank');
+
+            Swal.fire({
+                icon: 'success',
+                title: '🤖 WhatsApp Bot Triggered',
+                html: `
+                    <div class="text-start p-3 bg-dark rounded border border-success font-mono">
+                        <div class="mb-2 text-success fw-bold">
+                            <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp Chat Opened for +${cleanDigits}
+                        </div>
+                        <p class="text-white small mb-2">
+                            Send the prefilled WhatsApp message to receive your 6-digit verification code directly in your WhatsApp chat!
+                        </p>
+                        <div class="text-center p-2 rounded bg-black border border-info">
+                            <span class="text-muted small">Generated 2FA Code:</span>
+                            <div class="fs-4 text-warning fw-bold font-mono tracking-widest my-1">${generatedOtp}</div>
+                            <button type="button" class="btn btn-xs btn-info font-mono text-dark py-1 px-3 fw-bold" onclick="autoFillOtp('${generatedOtp}')">
+                                <i class="fa-solid fa-paste me-1"></i> Auto-fill OTP
+                            </button>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'Enter Received Code',
+                confirmButtonColor: '#0ea5e9'
+            });
+        } else {
+            Swal.fire('Error', data.message || 'Failed to trigger WhatsApp Bot', 'error');
+        }
+    } catch(e) {
+        Swal.fire('Error', 'Unable to connect to WhatsApp Bot service', 'error');
+    }
+}
+window.requestWhatsappBotOtp = requestWhatsappBotOtp;
+
 function autoFillOtp(code) {
     const input = document.getElementById('otpCodeInput');
     if (input) {

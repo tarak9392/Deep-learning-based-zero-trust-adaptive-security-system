@@ -176,10 +176,15 @@
                         <div class="tab-pane fade" id="mfa-otp-pane" role="tabpanel">
                             <div class="mb-3 text-start">
                                 <label class="form-label text-white small font-mono"><i class="fa-solid fa-mobile-screen text-info me-1"></i> Real Mobile Phone Number</label>
-                                <div class="input-group mb-1">
+                                <div class="input-group mb-2">
                                     <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="+91 Enter Phone Number">
                                     <button class="btn btn-sm btn-outline-info font-mono" type="button" id="btnSendSmsOtp" onclick="sendSmsOtpToRealNumber()">
                                         <i class="fa-solid fa-paper-plane me-1"></i> Send OTP
+                                    </button>
+                                </div>
+                                <div class="d-grid gap-2 mb-2">
+                                    <button class="btn btn-sm btn-outline-success font-mono" type="button" id="btnWhatsappBot" onclick="requestWhatsappBotOtp()">
+                                        <i class="fa-brands fa-whatsapp me-1"></i> 🤖 WhatsApp Bot (Get Code on WhatsApp)
                                     </button>
                                 </div>
                                 <div class="mb-2">
