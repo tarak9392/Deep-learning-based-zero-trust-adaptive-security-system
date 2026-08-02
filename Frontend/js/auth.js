@@ -592,34 +592,33 @@ async function sendSmsOtpToRealNumber() {
                     : `<i class="fa-solid fa-triangle-exclamation me-1"></i> Dispatched via Gateway (${providerInfo})`;
             }
 
-            const cleanDigits = phone.replace(/[^0-9]/g, '');
-            const waUrl = cleanDigits 
-                ? `https://wa.me/${cleanDigits}?text=${encodeURIComponent(`🔒 Your Zero Trust 2FA Verification Code for ${current2FAUsername || 'User'} is: ${generatedOtp}`)}`
-                : `https://wa.me/?text=${encodeURIComponent(`🔒 Your Zero Trust 2FA Verification Code for ${current2FAUsername || 'User'} is: ${generatedOtp}`)}`;
-
-            // Display Interactive Real-Time 2FA Dispatch Modal with Option 1 WhatsApp Button
+            // Display Automated Real-Time Server-Push 2FA Dispatch Modal
             Swal.fire({
                 icon: sentRealSms ? 'success' : 'info',
-                title: sentRealSms ? '📱 Real 2FA Message Sent' : '📱 2FA Code Dispatched',
+                title: sentRealSms ? '📱 Real-Time SMS Dispatched' : '📱 2FA Code Triggered',
                 html: `
                     <div class="text-start p-3 bg-dark rounded border border-info font-mono">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-info fw-bold"><i class="fa-solid fa-mobile-screen text-info me-1"></i> Recipient: ${phone}</span>
-                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-success text-white'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : 'WhatsApp Instant'}</span>
+                            <span class="badge ${sentRealSms ? 'bg-success' : 'bg-warning text-dark'} font-mono" style="font-size: 0.7rem;">${sentRealSms ? providerInfo : 'Server Push Gateway'}</span>
                         </div>
                         
-                        <div class="d-grid gap-2 mb-3">
-                            <a href="${waUrl}" target="_blank" class="btn btn-success font-mono text-decoration-none py-2 fw-bold shadow-sm">
-                                <i class="fa-brands fa-whatsapp me-2 fs-5"></i> 📲 Send OTP to ${phone} via WhatsApp
-                            </a>
-                        </div>
-
-                        <div class="text-center p-2 rounded bg-black border border-secondary">
-                            <span class="text-muted small">Generated Code: <strong class="text-warning font-mono fs-6 me-2">${generatedOtp}</strong></span>
-                            <button type="button" class="btn btn-xs btn-outline-info font-mono py-1 px-2" onclick="autoFillOtp('${generatedOtp}')">
-                                <i class="fa-solid fa-paste me-1"></i> Auto-fill
-                            </button>
-                        </div>
+                        ${sentRealSms ? `
+                            <div class="p-2 bg-black rounded text-success small border border-success mb-2">
+                                <i class="fa-solid fa-circle-check me-1"></i> Real-time automated message pushed to <strong>${phone}</strong> via <strong>${providerInfo}</strong>. Check your mobile SMS inbox.
+                            </div>
+                        ` : `
+                            <div class="p-2 bg-black rounded text-white small border border-secondary mb-2">
+                                <i class="fa-solid fa-paper-plane text-warning me-1"></i> Server pushed 2FA dispatch request to mobile gateway for <strong>${phone}</strong>.
+                            </div>
+                            <div class="text-center p-2 rounded bg-black border border-info">
+                                <span class="text-muted small">Demo / Testing 2FA Code:</span>
+                                <div class="fs-4 text-warning fw-bold font-mono tracking-widest my-1">${generatedOtp}</div>
+                                <button type="button" class="btn btn-xs btn-info font-mono text-dark py-1 px-3 fw-bold" onclick="autoFillOtp('${generatedOtp}')">
+                                    <i class="fa-solid fa-paste me-1"></i> Auto-fill OTP
+                                </button>
+                            </div>
+                        `}
                     </div>
                 `,
                 showConfirmButton: true,
