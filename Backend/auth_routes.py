@@ -253,7 +253,24 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
         except Exception as e:
             print(f"[CALLMEBOT ERROR] {e}")
 
-    # Provider 2: Twilio Verify Service API & Twilio REST API
+    # Provider 2: Fast2SMS API (For Any Indian 10-Digit Mobile Number)
+    fast2sms_key = getattr(Config, 'FAST2SMS_API_KEY', '')
+    if fast2sms_key:
+        try:
+            digits_only = ''.join(c for c in clean_phone if c.isdigit())[-10:]
+            msg_text = urllib.parse.quote(f"🔒 Zero Trust 2FA Verification Code for {username} is: {otp_code}. Valid for 5 minutes.")
+            url = f"https://www.fast2sms.com/dev/bulkV2?route=q&message={msg_text}&flash=0&numbers={digits_only}"
+            req = urllib.request.Request(url, headers={'authorization': fast2sms_key}, method='GET')
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status == 200:
+                    res_json = py_json.loads(resp.read().decode('utf-8'))
+                    if res_json.get('return'):
+                        print(f"[FAST2SMS REAL SMS] Successfully sent OTP to +91{digits_only}")
+                        return True, "Fast2SMS Cellular API"
+        except Exception as e:
+            print(f"[FAST2SMS ERROR] {e}")
+
+    # Provider 3: Twilio Verify Service API & Twilio REST API
     twilio_sid = getattr(Config, 'TWILIO_ACCOUNT_SID', '')
     twilio_token = getattr(Config, 'TWILIO_AUTH_TOKEN', '')
     twilio_from = getattr(Config, 'TWILIO_PHONE_NUMBER', '') or '+17372212163'
@@ -263,7 +280,7 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
         b64_auth = base64.b64encode(auth_str.encode('utf-8')).decode('utf-8')
         to_phone = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
 
-        # 2a. Try Twilio Verify Service (Bypasses template restrictions)
+        # 3a. Try Twilio Verify Service (Bypasses template restrictions)
         try:
             verify_sid = getattr(Config, 'TWILIO_VERIFY_SID', 'VA5846c090b86cdf441370fcb1907934a8')
             v_url = f"https://verify.twilio.com/v2/Services/{verify_sid}/Verifications"
@@ -278,7 +295,7 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
         except Exception as ve:
             print(f"[TWILIO VERIFY ERROR] {ve}")
 
-        # 2b. Direct Twilio SMS
+        # 3b. Direct Twilio SMS
         try:
             url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json"
             post_data = urllib.parse.urlencode({
@@ -297,30 +314,6 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
                     return True, "Twilio SMS API"
         except Exception as e:
             print(f"[TWILIO ERROR] {e}")
-
-    # Provider 3: Fast2SMS API (For Indian 10-Digit Mobile Numbers)
-    fast2sms_key = getattr(Config, 'FAST2SMS_API_KEY', '')
-    if fast2sms_key:
-        try:
-            digits_only = ''.join(c for c in clean_phone if c.isdigit())[-10:]
-            url = "https://www.fast2sms.com/dev/bulkV2"
-            headers = {
-                'authorization': fast2sms_key,
-                'Content-Type': 'application/json'
-            }
-            payload = py_json.dumps({
-                "variables_values": otp_code,
-                "route": "otp",
-                "numbers": digits_only
-            }).encode('utf-8')
-
-            req = urllib.request.Request(url, data=payload, headers=headers, method='POST')
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                if resp.status == 200:
-                    print(f"[FAST2SMS REAL SMS] Successfully sent OTP to {digits_only}")
-                    return True, "Fast2SMS API"
-        except Exception as e:
-            print(f"[FAST2SMS ERROR] {e}")
 
     # Provider 4: Textbelt API (Attempts key or default 'textbelt' 1-free-sms/day quota)
     textbelt_key = getattr(Config, 'TEXTBELT_API_KEY', '') or 'textbelt'
