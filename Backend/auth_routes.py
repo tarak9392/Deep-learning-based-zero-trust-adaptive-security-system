@@ -435,6 +435,9 @@ def verify_2fa():
         if not is_valid:
             return jsonify({"message": "Invalid or expired OTP Code. Please enter the exact 6-digit code sent to your email/mobile."}), 400
 
+        # One-time use: Clear active OTP code after successful verification
+        ACTIVE_SMS_OTPS.pop(username, None)
+
     # Generate Privileged JWT Token
     token = jwt.encode({
         'user_id': user.id,

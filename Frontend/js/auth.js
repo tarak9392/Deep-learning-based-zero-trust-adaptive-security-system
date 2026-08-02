@@ -504,7 +504,7 @@ async function scanFingerprintBiometric() {
 async function verify2FACode() {
     const code = document.getElementById('otpCodeInput').value.trim();
     if (!code) {
-        Swal.fire('Code Required', 'Please enter your 6-digit Authenticator OTP code (e.g. 849201)', 'warning');
+        Swal.fire('Code Required', 'Please enter the 6-digit OTP verification code sent to your phone/email.', 'warning');
         return;
     }
 
