@@ -545,7 +545,7 @@ async function sendSmsOtpToRealNumber() {
     const sendBtn = document.getElementById('btnSendSmsOtp');
     const statusText = document.getElementById('smsStatusText');
 
-    const phone = phoneInput ? phoneInput.value.trim() : '+91 98765 43210';
+    const phone = phoneInput ? phoneInput.value.trim() : '';
     if (!phone || phone.length < 8) {
         Swal.fire('Phone Number Required', 'Please enter a valid real mobile phone number.', 'warning');
         return;
