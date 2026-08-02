@@ -1,4 +1,5 @@
 import os
+import json
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'super-secret-key-zero-trust'
@@ -28,10 +29,20 @@ class Config:
     SMTP_USER = os.environ.get('SMTP_USER', '')
     SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 
+    # Load local Twilio Credentials safely
+    _tw_json = os.path.join(BASE_DIR, 'Backend', 'twilio_credentials.json')
+    _tw_data = {}
+    if os.path.exists(_tw_json):
+        try:
+            with open(_tw_json, 'r') as _f:
+                _tw_data = json.load(_f)
+        except Exception:
+            pass
+
     # Multi-Provider Real-Time SMS & Instant Messaging Authentication APIs
-    TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
-    TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
-    TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
+    TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID') or _tw_data.get('TWILIO_ACCOUNT_SID', '')
+    TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN') or _tw_data.get('TWILIO_AUTH_TOKEN', '')
+    TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER') or _tw_data.get('TWILIO_PHONE_NUMBER', '')
     FAST2SMS_API_KEY = os.environ.get('FAST2SMS_API_KEY', '')
     TEXTBELT_API_KEY = os.environ.get('TEXTBELT_API_KEY', '')
     CALLMEBOT_API_KEY = os.environ.get('CALLMEBOT_API_KEY', '')
