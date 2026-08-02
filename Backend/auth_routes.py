@@ -256,13 +256,14 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
     # Provider 2: Twilio REST API
     twilio_sid = getattr(Config, 'TWILIO_ACCOUNT_SID', '')
     twilio_token = getattr(Config, 'TWILIO_AUTH_TOKEN', '')
-    twilio_from = getattr(Config, 'TWILIO_PHONE_NUMBER', '')
+    twilio_from = getattr(Config, 'TWILIO_PHONE_NUMBER', '') or '+17372212163'
 
     if twilio_sid and twilio_token and twilio_from:
         try:
             url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json"
+            to_phone = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
             post_data = urllib.parse.urlencode({
-                'To': clean_phone if clean_phone.startswith('+') else f"+{clean_phone}",
+                'To': to_phone,
                 'From': twilio_from,
                 'Body': f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes."
             }).encode('utf-8')
@@ -273,7 +274,7 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
             req.add_header('Authorization', f'Basic {b64_auth}')
             req.add_header('Content-Type', 'application/x-www-form-urlencoded')
 
-            with urllib.request.urlopen(req, timeout=8) as resp:
+            with urllib.request.urlopen(req, timeout=10) as resp:
                 if resp.status in [200, 201]:
                     print(f"[TWILIO REAL SMS] Successfully sent OTP to {clean_phone}")
                     return True, "Twilio SMS API"
