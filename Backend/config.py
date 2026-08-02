@@ -40,9 +40,10 @@ class Config:
             pass
 
     # Multi-Provider Real-Time SMS & Instant Messaging Authentication APIs
-    TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID') or _tw_data.get('TWILIO_ACCOUNT_SID', '')
-    TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN') or _tw_data.get('TWILIO_AUTH_TOKEN', '')
-    FAST2SMS_API_KEY = os.environ.get('FAST2SMS_API_KEY') or _tw_data.get('FAST2SMS_API_KEY', '')
+    FAST2SMS_API_KEY = os.environ.get('FAST2SMS_API_KEY') or _tw_data.get('FAST2SMS_API_KEY', '') or 'JrqeUcWsVPNf6iQkTXlI15vHdCEDbzMtGAapyLwO2j0o849Bn3ZquKDnEP2iOcjBm5WSXTJIy6e3LwYV'
+    TWILIO_ACCOUNT_SID = ''
+    TWILIO_AUTH_TOKEN = ''
+    TWILIO_PHONE_NUMBER = ''
     TEXTBELT_API_KEY = os.environ.get('TEXTBELT_API_KEY', '')
     CALLMEBOT_API_KEY = os.environ.get('CALLMEBOT_API_KEY', '')
 

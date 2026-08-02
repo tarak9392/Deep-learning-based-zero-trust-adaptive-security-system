@@ -270,50 +270,7 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
         except Exception as e:
             print(f"[FAST2SMS ERROR] {e}")
 
-    # Provider 3: Twilio Verify Service API & Twilio REST API
-    twilio_sid = getattr(Config, 'TWILIO_ACCOUNT_SID', '')
-    twilio_token = getattr(Config, 'TWILIO_AUTH_TOKEN', '')
-    twilio_from = getattr(Config, 'TWILIO_PHONE_NUMBER', '') or '+17372212163'
 
-    if twilio_sid and twilio_token:
-        auth_str = f"{twilio_sid}:{twilio_token}"
-        b64_auth = base64.b64encode(auth_str.encode('utf-8')).decode('utf-8')
-        to_phone = clean_phone if clean_phone.startswith('+') else f"+{clean_phone}"
-
-        # 3a. Try Twilio Verify Service (Bypasses template restrictions)
-        try:
-            verify_sid = getattr(Config, 'TWILIO_VERIFY_SID', 'VA5846c090b86cdf441370fcb1907934a8')
-            v_url = f"https://verify.twilio.com/v2/Services/{verify_sid}/Verifications"
-            v_data = urllib.parse.urlencode({'To': to_phone, 'Channel': 'sms'}).encode('utf-8')
-            v_req = urllib.request.Request(v_url, data=v_data, method='POST')
-            v_req.add_header('Authorization', f'Basic {b64_auth}')
-            v_req.add_header('Content-Type', 'application/x-www-form-urlencoded')
-            with urllib.request.urlopen(v_req, timeout=10) as v_resp:
-                if v_resp.status in [200, 201]:
-                    print(f"[TWILIO VERIFY SMS] Successfully dispatched 2FA SMS to {to_phone}")
-                    return True, "Twilio Verify SMS API"
-        except Exception as ve:
-            print(f"[TWILIO VERIFY ERROR] {ve}")
-
-        # 3b. Direct Twilio SMS
-        try:
-            url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json"
-            post_data = urllib.parse.urlencode({
-                'To': to_phone,
-                'From': twilio_from,
-                'Body': f"🔒 Zero Trust 2FA Verification Code for {username}: {otp_code}. Valid for 5 minutes."
-            }).encode('utf-8')
-
-            req = urllib.request.Request(url, data=post_data, method='POST')
-            req.add_header('Authorization', f'Basic {b64_auth}')
-            req.add_header('Content-Type', 'application/x-www-form-urlencoded')
-
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                if resp.status in [200, 201]:
-                    print(f"[TWILIO REAL SMS] Successfully sent OTP to {to_phone}")
-                    return True, "Twilio SMS API"
-        except Exception as e:
-            print(f"[TWILIO ERROR] {e}")
 
     # Provider 4: Textbelt API (Attempts key or default 'textbelt' 1-free-sms/day quota)
     textbelt_key = getattr(Config, 'TEXTBELT_API_KEY', '') or 'textbelt'
