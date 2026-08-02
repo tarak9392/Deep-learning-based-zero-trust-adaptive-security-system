@@ -256,8 +256,10 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
     # Provider 2: Fast2SMS API (For Any Indian 10-Digit Mobile Number)
     fast2sms_key = getattr(Config, 'FAST2SMS_API_KEY', '')
     if fast2sms_key:
+        digits_only = ''.join(c for c in clean_phone if c.isdigit())[-10:]
+
+        # 2a. Fast2SMS Quick Route
         try:
-            digits_only = ''.join(c for c in clean_phone if c.isdigit())[-10:]
             msg_text = urllib.parse.quote(f"🔒 Zero Trust 2FA Verification Code for {username} is: {otp_code}. Valid for 5 minutes.")
             url = f"https://www.fast2sms.com/dev/bulkV2?route=q&message={msg_text}&flash=0&numbers={digits_only}"
             req = urllib.request.Request(url, headers={'authorization': fast2sms_key}, method='GET')
@@ -268,7 +270,29 @@ def send_real_sms_otp(phone_number, otp_code, username, req_callmebot_key=None):
                         print(f"[FAST2SMS REAL SMS] Successfully sent OTP to +91{digits_only}")
                         return True, "Fast2SMS Cellular API"
         except Exception as e:
-            print(f"[FAST2SMS ERROR] {e}")
+            print(f"[FAST2SMS ROUTE-Q ERROR] {e}")
+
+        # 2b. Fast2SMS OTP Route (Bypasses DND restrictions)
+        try:
+            url = "https://www.fast2sms.com/dev/bulkV2"
+            headers = {
+                'authorization': fast2sms_key,
+                'Content-Type': 'application/json'
+            }
+            payload = py_json.dumps({
+                "variables_values": otp_code,
+                "route": "otp",
+                "numbers": digits_only
+            }).encode('utf-8')
+            req = urllib.request.Request(url, data=payload, headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status == 200:
+                    res_json = py_json.loads(resp.read().decode('utf-8'))
+                    if res_json.get('return'):
+                        print(f"[FAST2SMS OTP SMS] Successfully sent OTP to +91{digits_only}")
+                        return True, "Fast2SMS OTP API"
+        except Exception as e:
+            print(f"[FAST2SMS ROUTE-OTP ERROR] {e}")
 
 
 
