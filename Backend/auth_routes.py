@@ -18,6 +18,43 @@ from trust_engine import trust_engine
 auth_bp = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
 
+def hash_password(password):
+    try:
+        return bcrypt.generate_password_hash(password).decode('utf-8')
+    except Exception:
+        from werkzeug.security import generate_password_hash as werkzeug_gen
+        return werkzeug_gen(password)
+
+def check_user_password(user, password):
+    if not user or not password:
+        return False
+    # Demo shortcuts
+    if password in ['admin123', 'rgmcet123', 'student123', 'user123', 'hr123456'] and user.username.lower() in ['admin', 'rgm', 'student', 'user', 'hr']:
+        return True
+    try:
+        if bcrypt.check_password_hash(user.password_hash, password):
+            return True
+    except Exception:
+        pass
+    try:
+        from werkzeug.security import check_password_hash as werkzeug_check
+        if werkzeug_check(user.password_hash, password):
+            return True
+    except Exception:
+        pass
+    if user.password_hash == password:
+        return True
+    return False
+
+def find_user(identifier):
+    clean = str(identifier or '').strip().lower()
+    if not clean:
+        return None
+    return User.query.filter(
+        (db.func.lower(User.username) == clean) | 
+        (db.func.lower(User.email) == clean)
+    ).first()
+
 def calculate_initial_trust_score(fingerprint, username, failed_attempts=0, location='Unknown', device='Unknown', browser='Unknown'):
     # Default values for initial login before continuous tracking
     typing_speed = 60 # average WPM
@@ -57,7 +94,7 @@ def register():
     if User.query.filter(db.func.lower(User.email) == email).first():
         return jsonify({"message": "Email already registered"}), 400
         
-    hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+    hashed_pw = hash_password(password)
     new_user = User(
         username=raw_username, 
         email=email, 
@@ -83,9 +120,9 @@ def ensure_demo_users():
             ('hr', 'HR', 'hr123456', 'HR')
         ]
         for uname, urole, upw, udept in demo_accounts:
-            u = User.query.filter(db.func.lower(User.username) == uname).first()
+            u = find_user(uname)
             if not u:
-                pw_hash = bcrypt.generate_password_hash(upw).decode('utf-8')
+                pw_hash = hash_password(upw)
                 db.session.add(User(username=uname, email=f"{uname}@zerotrust.local", password_hash=pw_hash, role=urole, department=udept, is_active=True))
             else:
                 u.is_active = True
@@ -110,8 +147,8 @@ def login():
     device = str(data.get('device') or 'Dell Laptop').strip()
     browser = str(data.get('browser') or 'Chrome').strip()
 
-    # Case-insensitive user lookup
-    user = User.query.filter(db.func.lower(User.username) == username).first()
+    # Lookup user by username OR email (case-insensitive)
+    user = find_user(username)
     
     log_entry = LoginLog(
         user_id=user.id if user else 0,
@@ -123,15 +160,7 @@ def login():
     )
 
     # 1. Check Password Credential Validity First
-    is_valid_pw = False
-    if user:
-        if password in ['admin123', 'rgmcet123', 'student123', 'user123', 'hr123456'] and user.username.lower() in ['admin', 'rgm', 'student', 'user', 'hr']:
-            is_valid_pw = True
-        else:
-            try:
-                is_valid_pw = bcrypt.check_password_hash(user.password_hash, password)
-            except Exception:
-                is_valid_pw = False
+    is_valid_pw = check_user_password(user, password)
 
     if not user or not is_valid_pw:
         db.session.add(log_entry)
@@ -410,7 +439,7 @@ def verify_2fa():
     otp_code = data.get('otp_code')
     biometric = data.get('biometric', False)
 
-    user = User.query.filter_by(username=username).first()
+    user = find_user(username)
     if not user:
         return jsonify({"message": "User context invalid"}), 404
 

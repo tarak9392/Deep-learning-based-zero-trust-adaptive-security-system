@@ -470,6 +470,7 @@ async function scanFingerprintBiometric() {
 
                     if (response.ok) {
                         localStorage.setItem('token', resData.token);
+                        const targetPage = (resData.role === 'Admin' || ['admin', 'hr', 'rgm'].includes((current2FAUsername || '').toLowerCase())) ? 'admin.html' : 'dashboard.html';
                         Swal.fire({
                             icon: 'success',
                             title: 'Biometric Access Granted',
@@ -477,7 +478,7 @@ async function scanFingerprintBiometric() {
                             timer: 1400,
                             showConfirmButton: false
                         }).then(() => {
-                            window.location.href = 'dashboard.html';
+                            window.location.href = targetPage;
                         });
 
                     } else {
@@ -522,6 +523,7 @@ async function verify2FACode() {
 
         if (response.ok) {
             localStorage.setItem('token', resData.token);
+            const targetPage = (resData.role === 'Admin' || ['admin', 'hr', 'rgm'].includes((current2FAUsername || '').toLowerCase())) ? 'admin.html' : 'dashboard.html';
             Swal.fire({
                 icon: 'success',
                 title: '2FA Verification Successful',
@@ -529,7 +531,7 @@ async function verify2FACode() {
                 timer: 1400,
                 showConfirmButton: false
             }).then(() => {
-                window.location.href = 'dashboard.html';
+                window.location.href = targetPage;
             });
 
         } else {
