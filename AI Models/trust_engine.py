@@ -1,6 +1,9 @@
 import pickle
 import os
-import numpy as np
+try:
+    import numpy as np
+except Exception:
+    np = None
 from datetime import datetime
 
 class TrustEngine:

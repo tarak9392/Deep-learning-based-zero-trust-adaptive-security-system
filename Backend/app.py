@@ -37,56 +37,61 @@ db.init_app(app)
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
-with app.app_context():
-    db.create_all()
-    from flask_bcrypt import Bcrypt
-    bcrypt = Bcrypt(app)
-    
-    # Create / update initial HR Admin user
-    hr_user = User.query.filter_by(username='hr').first()
-    hashed_hr_pw = bcrypt.generate_password_hash('hr123456').decode('utf-8')
-    if not hr_user:
-        hr_user = User(username='hr', email='hr@zerotrust.local', password_hash=hashed_hr_pw, role='Admin', department='HR')
-        db.session.add(hr_user)
-    else:
-        hr_user.password_hash = hashed_hr_pw
-        hr_user.role = 'Admin'
-        hr_user.department = 'HR'
+try:
+    with app.app_context():
+        db.create_all()
+        from flask_bcrypt import Bcrypt
+        bcrypt = Bcrypt(app)
+        
+        # Create / update initial HR Admin user
+        hr_user = User.query.filter_by(username='hr').first()
+        hashed_hr_pw = bcrypt.generate_password_hash('hr123456').decode('utf-8')
+        if not hr_user:
+            hr_user = User(username='hr', email='hr@zerotrust.local', password_hash=hashed_hr_pw, role='Admin', department='HR')
+            db.session.add(hr_user)
+        else:
+            hr_user.password_hash = hashed_hr_pw
+            hr_user.role = 'Admin'
+            hr_user.department = 'HR'
 
-    # Create / update initial rgm Admin user
-    rgm_user = User.query.filter(db.func.lower(User.username) == 'rgm').first()
-    hashed_rgm_pw = bcrypt.generate_password_hash('rgmcet123').decode('utf-8')
-    if not rgm_user:
-        rgm_user = User(username='rgm', email='rgm@zerotrust.local', password_hash=hashed_rgm_pw, role='Admin', department='Security', is_active=True)
-        db.session.add(rgm_user)
-    else:
-        rgm_user.password_hash = hashed_rgm_pw
-        rgm_user.role = 'Admin'
-        rgm_user.department = 'Security'
-        rgm_user.is_active = True
+        # Create / update initial rgm Admin user
+        rgm_user = User.query.filter(db.func.lower(User.username) == 'rgm').first()
+        hashed_rgm_pw = bcrypt.generate_password_hash('rgmcet123').decode('utf-8')
+        if not rgm_user:
+            rgm_user = User(username='rgm', email='rgm@zerotrust.local', password_hash=hashed_rgm_pw, role='Admin', department='Security', is_active=True)
+            db.session.add(rgm_user)
+        else:
+            rgm_user.password_hash = hashed_rgm_pw
+            rgm_user.role = 'Admin'
+            rgm_user.department = 'Security'
+            rgm_user.is_active = True
 
-    # Create initial admin user
-    admin_user = User.query.filter(db.func.lower(User.username) == 'admin').first()
-    hashed_pw = bcrypt.generate_password_hash('admin123').decode('utf-8')
-    if not admin_user:
-        admin = User(username='admin', email='admin@zerotrust.local', password_hash=hashed_pw, role='Admin', department='IT', is_active=True)
-        db.session.add(admin)
-    else:
-        admin_user.password_hash = hashed_pw
-        admin_user.role = 'Admin'
-        admin_user.is_active = True
+        # Create initial admin user
+        admin_user = User.query.filter(db.func.lower(User.username) == 'admin').first()
+        hashed_pw = bcrypt.generate_password_hash('admin123').decode('utf-8')
+        if not admin_user:
+            admin = User(username='admin', email='admin@zerotrust.local', password_hash=hashed_pw, role='Admin', department='IT', is_active=True)
+            db.session.add(admin)
+        else:
+            admin_user.password_hash = hashed_pw
+            admin_user.role = 'Admin'
+            admin_user.is_active = True
 
-    # Create initial student user
-    if not User.query.filter_by(username='student').first():
-        student_pw = bcrypt.generate_password_hash('student123').decode('utf-8')
-        student = User(username='student', email='student@zerotrust.local', password_hash=student_pw, role='Student', department='Engineering')
-        db.session.add(student)
+        # Create initial student user
+        if not User.query.filter_by(username='student').first():
+            student_pw = bcrypt.generate_password_hash('student123').decode('utf-8')
+            student = User(username='student', email='student@zerotrust.local', password_hash=student_pw, role='Student', department='Engineering')
+            db.session.add(student)
 
-    # Create initial general user
-    if not User.query.filter_by(username='user').first():
-        user_pw = bcrypt.generate_password_hash('user123').decode('utf-8')
-        user_obj = User(username='user', email='user@zerotrust.local', password_hash=user_pw, role='Employee', department='HR')
-        db.session.add(user_obj)
+        # Create initial general user
+        if not User.query.filter_by(username='user').first():
+            user_pw = bcrypt.generate_password_hash('user123').decode('utf-8')
+            user_obj = User(username='user', email='user@zerotrust.local', password_hash=user_pw, role='Employee', department='HR')
+            db.session.add(user_obj)
+
+        db.session.commit()
+except Exception as e:
+    print(f"[DB INIT WARNING] {e}")
 
 @app.after_request
 def add_header(response):
