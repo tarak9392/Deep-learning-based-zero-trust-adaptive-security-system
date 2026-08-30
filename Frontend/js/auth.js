@@ -261,11 +261,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         current2FAUsername = username;
                         if (document.getElementById('mfaUsernameDisplay')) document.getElementById('mfaUsernameDisplay').innerText = username;
 
+                        // Pre-populate saved Indian mobile number if available
+                        const savedPhone = localStorage.getItem('saved_hr_phone');
+                        const phoneInput = document.getElementById('hrRealPhoneInput');
+                        if (savedPhone && phoneInput) {
+                            phoneInput.value = savedPhone;
+                        }
+
                         // Trigger OTP generation automatically in backend
                         fetch(`${API_BASE_URL}/auth/send_otp`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ username: username })
+                            body: JSON.stringify({ 
+                                username: username,
+                                mobile_number: savedPhone ? ('+91' + savedPhone) : ''
+                            })
                         }).catch(() => {});
 
                         const mfaModal = new bootstrap.Modal(document.getElementById('mfaModal'));
@@ -553,11 +563,17 @@ async function sendSmsOtpToRealNumber() {
     const sendBtn = document.getElementById('btnSendSmsOtp');
     const statusText = document.getElementById('smsStatusText');
 
-    const phone = phoneInput ? phoneInput.value.trim() : '';
-    if (!phone || phone.length < 8) {
-        Swal.fire('Phone Number Required', 'Please enter a valid real mobile phone number.', 'warning');
+    let digits = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
+    if (!digits || (digits.length !== 10 && digits.length !== 12)) {
+        Swal.fire('10-Digit Mobile Required', 'Please enter your 10-digit Indian mobile number (country code +91 is fixed).', 'warning');
         return;
     }
+
+    if (digits.length > 10) {
+        digits = digits.slice(-10);
+    }
+    const phone = '+91' + digits;
+    localStorage.setItem('saved_hr_phone', digits);
 
     const keyInput = document.getElementById('callmebotKeyInput');
     let callmebotKey = keyInput ? keyInput.value.trim() : '';

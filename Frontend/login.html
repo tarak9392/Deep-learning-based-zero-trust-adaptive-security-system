@@ -325,14 +325,17 @@
                         High-privilege account detected (<strong class="text-info" id="mfaUsernameDisplay">hr</strong>). Enter the 6-digit Authenticator OTP code to verify your session.
                     </p>
 
-                    <!-- Real Mobile Phone SMS / WhatsApp OTP Option -->
+                    <!-- Real Mobile Phone SMS / WhatsApp OTP Option with Fixed +91 Prefix -->
                     <div class="mb-3 text-start p-3 rounded-3 bg-dark border border-secondary">
                         <label class="form-label text-white small font-mono mb-1">
-                            <i class="fa-solid fa-mobile-screen text-info me-1"></i> Send OTP to Real Mobile / WhatsApp
+                            <i class="fa-solid fa-mobile-screen text-info me-1"></i> Send OTP to Mobile / WhatsApp
                         </label>
                         <div class="input-group mb-2">
-                            <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="+91 Enter Phone Number">
-                            <button class="btn btn-sm btn-outline-info font-mono" type="button" id="btnSendSmsOtp" onclick="sendSmsOtpToRealNumber()">
+                            <span class="input-group-text font-mono fw-bold text-info px-3" style="background: rgba(30, 41, 59, 0.9); border: 1px solid var(--accent-color); border-right: none; border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                                <span class="me-1">🇮🇳</span> +91
+                            </span>
+                            <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="Enter 10-Digit Number" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="border-left: none; border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                            <button class="btn btn-sm btn-outline-info font-mono px-3" type="button" id="btnSendSmsOtp" onclick="sendSmsOtpToRealNumber()">
                                 <i class="fa-solid fa-paper-plane me-1"></i> Send OTP
                             </button>
                         </div>
@@ -345,7 +348,7 @@
                             </div>
                         </div>
                         <span class="text-muted small font-mono" style="font-size: 0.72rem;" id="smsStatusText">
-                            <i class="fa-solid fa-info-circle me-1"></i> Enter phone number above to receive live 2FA OTP code.
+                            <i class="fa-solid fa-info-circle text-info me-1"></i> Country code +91 is fixed. Enter only your 10-digit mobile number.
                         </span>
                     </div>
 
