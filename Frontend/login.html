@@ -3,107 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Trust Login | Enterprise Security</title>
+    <title>Zero Trust System | Autonomous AI Authentication</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
+    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2.0">
     <script src="js/theme_switcher.js"></script>
 </head>
-<body class="d-flex flex-column align-items-center justify-content-center min-vh-100 py-4">
+<body class="d-flex flex-column min-vh-100 justify-content-between position-relative overflow-x-hidden">
 
-    <!-- Theme Switcher Top Bar -->
-    <div class="mb-3 text-center">
-        <div class="theme-switcher-bar">
-            <button type="button" class="theme-btn active" data-theme="indigo" onclick="applyTheme('indigo')">Indigo</button>
-            <button type="button" class="theme-btn" data-theme="emerald" onclick="applyTheme('emerald')">Emerald</button>
-            <button type="button" class="theme-btn" data-theme="platinum" onclick="applyTheme('platinum')">Platinum</button>
+    <!-- Interactive Cyber Neural Mesh Particle Canvas -->
+    <canvas id="cyberCanvas"></canvas>
+
+    <!-- Ambient Neon Glowing Orbs -->
+    <div class="cyber-glow-orb cyber-glow-orb-1"></div>
+    <div class="cyber-glow-orb cyber-glow-orb-2"></div>
+
+    <!-- Top Command Navigation Bar -->
+    <header class="position-relative z-1 py-3 px-4">
+        <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <!-- Brand Badge -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge rounded-pill bg-dark border border-secondary px-3 py-2 font-mono text-white d-flex align-items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-shield-cat text-info"></i>
+                    <span>ZERO TRUST <span class="text-info fw-bold">v2.4</span></span>
+                </span>
+                <span class="badge rounded-pill bg-dark border border-secondary px-3 py-2 font-mono text-muted d-none d-md-inline-flex align-items-center gap-2">
+                    <span class="status-pulse-dot"></span>
+                    <span class="text-success small">AI Engine Online</span>
+                </span>
+            </div>
+
+            <!-- Theme Switcher Controls -->
+            <div class="theme-switcher-bar shadow-sm">
+                <button type="button" class="theme-btn active" data-theme="indigo" onclick="applyTheme('indigo')">
+                    <i class="fa-solid fa-circle text-primary me-1" style="font-size: 0.65rem;"></i> Indigo
+                </button>
+                <button type="button" class="theme-btn" data-theme="emerald" onclick="applyTheme('emerald')">
+                    <i class="fa-solid fa-circle text-success me-1" style="font-size: 0.65rem;"></i> Emerald
+                </button>
+                <button type="button" class="theme-btn" data-theme="platinum" onclick="applyTheme('platinum')">
+                    <i class="fa-solid fa-circle text-info me-1" style="font-size: 0.65rem;"></i> Platinum
+                </button>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <div class="container animate-fade-in">
-        <div class="row justify-content-center">
-            <div class="col-md-5 col-lg-4">
-                <div class="glass-panel p-5">
-                    <div class="text-center mb-4">
-                        <i class="fa-solid fa-shield-halved fa-3x mb-3" style="color: var(--accent-color);"></i>
-                        <h2 class="h3 text-white">Zero Trust System</h2>
-                        <p class="text-muted small">Adaptive AI Authentication</p>
-                    </div>
-
-                    <form id="loginForm">
-                        <div class="mb-3">
-                            <label class="form-label text-white small">Username / Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text glass-input border-end-0"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" class="form-control glass-input border-start-0" id="username" placeholder="Enter username" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label text-white small">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text glass-input border-end-0"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" class="form-control glass-input border-start-0" id="password" placeholder="Enter password" required>
-                                <span class="input-group-text glass-input" style="cursor: pointer;" id="togglePassword"><i class="fa-solid fa-eye"></i></span>
-                            </div>
-                        </div>
-
-                        <hr class="border-secondary my-4">
-                        <p class="text-accent small mb-2"><i class="fa-solid fa-microchip"></i> Context Simulation</p>
+    <!-- Main Authentication Command Center -->
+    <main class="container position-relative z-1 my-auto py-4">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-12 col-xl-10">
+                <div class="glass-panel p-4 p-md-5 shadow-2xl border border-secondary animate-fade-in" style="background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(20px);">
+                    <div class="row g-4 g-lg-5 align-items-center">
                         
-                            <div class="col-12 mb-3">
-                                <label class="form-label text-white small d-flex justify-content-between align-items-center">
-                                    <span><i class="fa-solid fa-location-dot text-info me-1"></i> Location / City</span>
-                                    <span id="locLoader" class="spinner-border spinner-border-sm text-info ms-1" style="display: none;"></span>
-                                </label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control glass-input font-mono" id="simLocation" placeholder="Detecting your location..." required>
-                                    <button type="button" class="btn btn-outline-info font-mono" onclick="fetchRealLocation(true)" title="Re-detect exact GPS / IP location">
-                                        <i class="fa-solid fa-crosshairs me-1"></i> Detect
-                                    </button>
+                        <!-- LEFT PANEL: Visual Hologram & Security Intelligence -->
+                        <div class="col-12 col-lg-5 text-center text-lg-start border-lg-end border-secondary pe-lg-4">
+                            <!-- Animated Hologram Shield -->
+                            <div class="hologram-shield-wrapper mb-3">
+                                <div class="hologram-ring hologram-ring-1"></div>
+                                <div class="hologram-ring hologram-ring-2"></div>
+                                <i class="fa-solid fa-shield-halved hologram-shield-icon"></i>
+                            </div>
+
+                            <h1 class="h3 fw-bold text-white mb-1">Zero Trust Security</h1>
+                            <p class="text-muted small mb-3">Adaptive AI Risk & Continuous Authentication</p>
+
+                            <!-- Live Telemetry Card -->
+                            <div class="telemetry-card mb-4 text-start">
+                                <div class="d-flex justify-content-between align-items-center mb-1 text-accent">
+                                    <span><i class="fa-solid fa-brain me-1"></i> Threat Engine</span>
+                                    <span class="text-success"><i class="fa-solid fa-circle-check me-1"></i> Active</span>
                                 </div>
-                                <div class="mt-1 d-flex gap-2">
-                                    <span class="text-muted" style="font-size: 0.72rem;">Simulate Attack:</span>
-                                    <a href="javascript:void(0)" class="text-danger text-decoration-none font-mono" style="font-size: 0.72rem;" onclick="document.getElementById('simLocation').value='Russia'">[Russia]</a>
-                                    <a href="javascript:void(0)" class="text-warning text-decoration-none font-mono" style="font-size: 0.72rem;" onclick="document.getElementById('simLocation').value='Tor Node'">[Tor Node]</a>
+                                <div class="text-muted small mb-2">Isolation Forest & Random Forest Models</div>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary" style="font-size: 0.72rem;">
+                                    <span class="text-muted">Dynamic Trust Threshold</span>
+                                    <span class="text-info fw-bold font-mono">≥ 70% Safe Zone</span>
                                 </div>
                             </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label text-white small">Device</label>
-                                <select class="form-control form-control-sm glass-input" id="simDevice">
-                                    <option value="Dell Laptop">Dell Laptop</option>
-                                    <option value="Office Desktop">Office Desktop</option>
-                                    <option value="Unknown Mobile">Unknown Mobile</option>
-                                </select>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <label class="form-label text-white small">Browser</label>
-                                <select class="form-control form-control-sm glass-input" id="simBrowser">
-                                    <option value="Chrome">Chrome</option>
-                                    <option value="Firefox">Firefox</option>
-                                    <option value="Tor Browser">Tor Browser</option>
-                                </select>
+
+                            <!-- Quick Select Credentials for One-Click Demo Access -->
+                            <div class="mb-2 text-start">
+                                <p class="text-white small fw-bold mb-2 font-mono" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                                    <i class="fa-solid fa-bolt text-warning me-1"></i> QUICK DEMO ROLES (CLICK TO FILL)
+                                </p>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <button type="button" class="role-pill-btn" onclick="quickFillRole('admin', 'admin123')" title="Fill Admin Credentials">
+                                            <i class="fa-solid fa-crown text-warning"></i>
+                                            <div>
+                                                <div class="text-white">IT Admin</div>
+                                                <span class="text-muted" style="font-size: 0.68rem;">admin / admin123</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="role-pill-btn" onclick="quickFillRole('rgm', 'rgmcet123')" title="Fill Security Lead Credentials">
+                                            <i class="fa-solid fa-user-shield text-info"></i>
+                                            <div>
+                                                <div class="text-white">Security Lead</div>
+                                                <span class="text-muted" style="font-size: 0.68rem;">rgm / rgmcet123</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="role-pill-btn" onclick="quickFillRole('hr', 'hr123456')" title="Fill HR Admin with Step-up 2FA">
+                                            <i class="fa-solid fa-fingerprint text-success"></i>
+                                            <div>
+                                                <div class="text-white">HR (2FA)</div>
+                                                <span class="text-muted" style="font-size: 0.68rem;">hr / hr123456</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="role-pill-btn" onclick="quickFillRole('student', 'student123')" title="Fill Student Credentials">
+                                            <i class="fa-solid fa-graduation-cap text-primary"></i>
+                                            <div>
+                                                <div class="text-white">Student</div>
+                                                <span class="text-muted" style="font-size: 0.68rem;">student123</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-cyber w-100 py-2 rounded-3" id="loginBtn">
-                            <i class="fa-solid fa-right-to-bracket me-2"></i> Authenticate
-                        </button>
-                    </form>
+                        <!-- RIGHT PANEL: Authentication Form & Context Simulation -->
+                        <div class="col-12 col-lg-7 ps-lg-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h2 class="h4 text-white fw-bold mb-0">Identity Authentication</h2>
+                                    <p class="text-muted small mb-0">Verify credentials to calculate dynamic trust score</p>
+                                </div>
+                                <span class="badge rounded-pill bg-dark border border-secondary text-info font-mono d-none d-sm-inline-block px-3 py-2">
+                                    <i class="fa-solid fa-lock text-info me-1"></i> NIST 800-207
+                                </span>
+                            </div>
 
-                    <div class="mt-4 text-center">
-                        <p class="text-muted small mb-0">Protected by <span class="text-info">AI Threat Engine</span></p>
-                        <p class="text-muted small mt-2">New employee? <a href="register.html" class="text-accent text-decoration-none fw-bold">Register here</a></p>
+                            <form id="loginForm">
+                                <!-- Username Field -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white small fw-semibold">Username / Corporate ID</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text glass-input border-end-0 text-info"><i class="fa-solid fa-user"></i></span>
+                                        <input type="text" class="form-control glass-input border-start-0 font-mono" id="username" placeholder="Enter username (admin, hr, rgm, student)" required autocomplete="username">
+                                    </div>
+                                </div>
+
+                                <!-- Password Field -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white small fw-semibold">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text glass-input border-end-0 text-info"><i class="fa-solid fa-key"></i></span>
+                                        <input type="password" class="form-control glass-input border-start-0" id="password" placeholder="Enter password" required autocomplete="current-password">
+                                        <span class="input-group-text glass-input text-muted" style="cursor: pointer;" id="togglePassword" title="Toggle password visibility">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Context Simulation Card -->
+                                <div class="p-3 rounded-3 mb-3" style="background: rgba(0, 0, 0, 0.35); border: 1px dashed var(--glass-border);">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-accent small fw-bold font-mono">
+                                            <i class="fa-solid fa-microchip me-1"></i> Context Simulation (ABAC Engine)
+                                        </span>
+                                        <span id="locLoader" class="spinner-border spinner-border-sm text-info ms-1" style="display: none;"></span>
+                                    </div>
+
+                                    <!-- Location Field -->
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="form-label text-muted small mb-0 font-mono" style="font-size: 0.73rem;">
+                                                <i class="fa-solid fa-location-crosshairs text-info me-1"></i> Access Location / IP Geolocation
+                                            </label>
+                                            <button type="button" class="btn btn-sm btn-outline-info font-mono py-0 px-2" style="font-size: 0.72rem;" onclick="fetchRealLocation(true)" title="Auto-detect real GPS/IP location">
+                                                <i class="fa-solid fa-satellite-dish me-1"></i> Detect GPS
+                                            </button>
+                                        </div>
+                                        <input type="text" class="form-control glass-input font-mono form-control-sm" id="simLocation" placeholder="Detecting your location..." required>
+                                        <div class="mt-1 d-flex flex-wrap gap-2 align-items-center">
+                                            <span class="text-muted" style="font-size: 0.7rem;">Threat Testing:</span>
+                                            <a href="javascript:void(0)" class="badge bg-danger text-decoration-none font-mono" onclick="document.getElementById('simLocation').value='Russia'">
+                                                <i class="fa-solid fa-triangle-exclamation me-1"></i> [Russia Threat]
+                                            </a>
+                                            <a href="javascript:void(0)" class="badge bg-warning text-dark text-decoration-none font-mono" onclick="document.getElementById('simLocation').value='Tor Node'">
+                                                <i class="fa-solid fa-user-secret me-1"></i> [Tor Exit Node]
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Device & Browser Selects -->
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label text-muted small mb-1 font-mono" style="font-size: 0.73rem;">
+                                                <i class="fa-solid fa-laptop text-info me-1"></i> Device
+                                            </label>
+                                            <select class="form-select form-select-sm glass-input" id="simDevice">
+                                                <option value="Dell Laptop">Dell Laptop (Secure)</option>
+                                                <option value="Office Desktop">Office Desktop</option>
+                                                <option value="Unknown Mobile">Unknown Mobile</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label text-muted small mb-1 font-mono" style="font-size: 0.73rem;">
+                                                <i class="fa-solid fa-globe text-info me-1"></i> Browser
+                                            </label>
+                                            <select class="form-select form-select-sm glass-input" id="simBrowser">
+                                                <option value="Chrome">Chrome (Protected)</option>
+                                                <option value="Firefox">Firefox</option>
+                                                <option value="Tor Browser">Tor Browser</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" class="btn btn-cyber-glow w-100 py-3 rounded-3" id="loginBtn">
+                                    <i class="fa-solid fa-shield-halved me-2"></i> Authenticate Session
+                                </button>
+                            </form>
+
+                            <!-- Footer Badges -->
+                            <div class="mt-4 pt-3 border-top border-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <span class="text-muted small" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-fingerprint text-info me-1"></i> Behavioral Biometrics Active
+                                </span>
+                                <span class="text-muted small" style="font-size: 0.75rem;">
+                                    New user? <a href="register.html" class="text-accent text-decoration-none fw-bold">Register here</a>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Footer System Info Bar -->
+    <footer class="position-relative z-1 py-3 text-center text-muted small" style="font-size: 0.75rem;">
+        <span>Adaptive Zero Trust Cyber Infrastructure • Continuous Threat Scoring • Python Flask AI Backend</span>
+    </footer>
 
     <!-- Mandatory Step-up 2FA & Fingerprint Biometric Modal -->
     <div class="modal fade" id="mfaModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
@@ -137,7 +286,6 @@
                     <div class="tab-content" id="mfaTabContent">
                         <!-- Tab 1: Biometric Fingerprint -->
                         <div class="tab-pane fade show active" id="mfa-fingerprint-pane" role="tabpanel">
-                            
                             <!-- Permission Request Card -->
                             <div id="biometricPermissionCard" class="p-3 bg-dark rounded border border-info text-center mb-3">
                                 <i class="fa-solid fa-user-shield text-warning fs-3 mb-2"></i>
@@ -214,11 +362,104 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="js/auth.js?v=9.1"></script>
-    <!-- Vercel Deployment Sync: Original login page restored -->
+    <script src="js/auth.js?v=9.2"></script>
 
+    <!-- Cyber Neural Mesh Particle Canvas Script -->
+    <script>
+        (function() {
+            const canvas = document.getElementById('cyberCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            let mouse = { x: null, y: null, maxDist: 140 };
 
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
 
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+            window.addEventListener('mouseout', () => {
+                mouse.x = null;
+                mouse.y = null;
+            });
 
+            const particleCount = Math.min(Math.floor((width * height) / 18000), 65);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.7,
+                    vy: (Math.random() - 0.5) * 0.7,
+                    radius: Math.random() * 1.8 + 1,
+                    hue: Math.random() > 0.4 ? 217 : 190
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0 || p.x > width) p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                    // Draw Particle
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${p.hue}, 85%, 65%, 0.65)`;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = `hsla(${p.hue}, 85%, 65%, 0.8)`;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Connect particles
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 110) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            const alpha = (1 - dist / 110) * 0.22;
+                            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Connect to mouse
+                    if (mouse.x !== null && mouse.y !== null) {
+                        const dx = p.x - mouse.x;
+                        const dy = p.y - mouse.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < mouse.maxDist) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(mouse.x, mouse.y);
+                            const alpha = (1 - dist / mouse.maxDist) * 0.45;
+                            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+                            ctx.lineWidth = 1.2;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+    </script>
 </body>
 </html>
