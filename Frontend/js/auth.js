@@ -260,15 +260,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.requires_2fa) {
                         current2FAUsername = username;
                         if (document.getElementById('mfaUsernameDisplay')) document.getElementById('mfaUsernameDisplay').innerText = username;
-                        if (document.getElementById('permUserDisplay')) document.getElementById('permUserDisplay').innerText = username;
 
-                        const card = document.getElementById('biometricPermissionCard');
-                        const area = document.getElementById('biometricScannerArea');
-                        if (card) card.style.display = 'block';
-                        if (area) area.style.display = 'none';
+                        // Trigger OTP generation automatically in backend
+                        fetch(`${API_BASE_URL}/auth/send_otp`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: username })
+                        }).catch(() => {});
 
                         const mfaModal = new bootstrap.Modal(document.getElementById('mfaModal'));
                         mfaModal.show();
+                        setTimeout(() => {
+                            const otpInput = document.getElementById('otpCodeInput');
+                            if (otpInput) otpInput.focus();
+                        }, 400);
+
                         btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i> Authenticate';
                         btn.disabled = false;
                         return;

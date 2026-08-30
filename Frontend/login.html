@@ -305,106 +305,63 @@
         <span>Adaptive Zero Trust Cyber Infrastructure • Continuous Threat Scoring • Python Flask AI Backend</span>
     </footer>
 
-    <!-- Mandatory Step-up 2FA & Fingerprint Biometric Modal -->
+    <!-- Mandatory Step-up 2FA (OTP Authenticator Only) Modal -->
     <div class="modal fade" id="mfaModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-white p-4" style="background: #0b0f19; border: 1px solid var(--accent-color); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.85);">
                 <div class="modal-header border-0 pb-0 justify-content-between">
                     <h5 class="modal-title fw-bold text-accent">
-                        <i class="fa-solid fa-shield-halved text-warning me-2"></i> Step-Up 2FA & Biometric Verification
+                        <i class="fa-solid fa-shield-halved text-warning me-2"></i> Two-Factor Authentication (2FA)
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center py-4">
+                    <div class="p-3 mb-3 rounded-circle bg-info/10 text-info d-inline-flex align-items-center justify-content-center" style="width: 65px; height: 65px; border: 1.5px dashed var(--accent-color);">
+                        <i class="fa-solid fa-key fs-3 text-info"></i>
+                    </div>
+
+                    <h5 class="text-white fw-bold mb-1">Enter Authenticator OTP</h5>
                     <p class="text-muted small mb-4">
-                        High-privilege account detected (<strong class="text-info" id="mfaUsernameDisplay">hr</strong>). Complete Multi-Factor Authentication or Fingerprint Biometric scan.
+                        High-privilege account detected (<strong class="text-info" id="mfaUsernameDisplay">hr</strong>). Enter the 6-digit Authenticator OTP code to verify your session.
                     </p>
 
-                    <!-- Nav Pills for Fingerprint vs 2FA Code -->
-                    <ul class="nav nav-pills justify-content-center mb-4 font-mono small" id="mfaTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active btn-sm" id="tab-fingerprint" data-bs-toggle="pill" data-bs-target="#mfa-fingerprint-pane" type="button" role="tab">
-                                <i class="fa-solid fa-fingerprint me-1"></i> Biometric Scanner
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link btn-sm" id="tab-otp" data-bs-toggle="pill" data-bs-target="#mfa-otp-pane" type="button" role="tab">
-                                <i class="fa-solid fa-key me-1"></i> Authenticator Code
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="mfaTabContent">
-                        <!-- Tab 1: Biometric Fingerprint -->
-                        <div class="tab-pane fade show active" id="mfa-fingerprint-pane" role="tabpanel">
-                            <!-- Permission Request Card -->
-                            <div id="biometricPermissionCard" class="p-3 bg-dark rounded border border-info text-center mb-3">
-                                <i class="fa-solid fa-user-shield text-warning fs-3 mb-2"></i>
-                                <p class="small text-white mb-2 font-mono">
-                                    Zero Trust System requests permission to access hardware <strong>Touch ID / Fingerprint Sensor</strong> for account <span class="text-info fw-bold" id="permUserDisplay">hr</span>.
-                                </p>
-                                <div class="d-flex gap-2 justify-content-center mt-3">
-                                    <button type="button" class="btn btn-sm btn-success font-mono px-3" onclick="grantBiometricPermission()">
-                                        <i class="fa-solid fa-shield-check me-1"></i> Allow Biometric Access
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger font-mono px-3" onclick="denyBiometricPermission()">
-                                        <i class="fa-solid fa-ban me-1"></i> Deny
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Scanner Area (Revealed after Permission Granted) -->
-                            <div id="biometricScannerArea" class="my-3 text-center" style="display: none;">
-                                <div class="badge bg-success font-mono mb-3"><i class="fa-solid fa-lock-open me-1"></i> Biometric Sensor Access Granted</div>
-                                <div class="d-block">
-                                    <div class="fingerprint-container mb-2" id="fingerprintBtn" onclick="scanFingerprintBiometric()" style="cursor: pointer;">
-                                        <i class="fa-solid fa-fingerprint fa-4x text-info" id="fingerprintIcon"></i>
-                                        <div class="fingerprint-scanner-laser"></div>
-                                    </div>
-                                </div>
-                                <p class="text-accent small font-mono mt-2 mb-3" id="fingerprintStatus">
-                                    <i class="fa-solid fa-hand-pointer me-1"></i> Place Finger on Sensor to Scan
-                                </p>
-                                <button type="button" class="btn btn-sm btn-cyber font-mono w-100" id="btnScanFingerprint" onclick="scanFingerprintBiometric()">
-                                    <i class="fa-solid fa-fingerprint me-1"></i> Scan Fingerprint Now
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Tab 2: Real Mobile SMS OTP -->
-                        <div class="tab-pane fade" id="mfa-otp-pane" role="tabpanel">
-                            <div class="mb-3 text-start">
-                                <label class="form-label text-white small font-mono"><i class="fa-solid fa-mobile-screen text-info me-1"></i> Real Mobile Phone Number</label>
-                                <div class="input-group mb-2">
-                                    <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="+91 Enter Phone Number">
-                                    <button class="btn btn-sm btn-outline-info font-mono" type="button" id="btnSendSmsOtp" onclick="sendSmsOtpToRealNumber()">
-                                        <i class="fa-solid fa-paper-plane me-1"></i> Send OTP
-                                    </button>
-                                </div>
-
-                                <div class="mb-2">
-                                    <input type="text" class="form-control glass-input font-mono form-control-sm" id="callmebotKeyInput" placeholder="CallMeBot API Key (Optional for Instant WhatsApp SMS)">
-                                    <div class="mt-1 d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
-                                        <span class="text-muted"><i class="fa-brands fa-whatsapp text-success me-1"></i> Free WhatsApp SMS setup:</span>
-                                        <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" class="text-info text-decoration-none">[Get Free API Key Guide]</a>
-                                    </div>
-                                </div>
-                                <span class="text-muted small font-mono" style="font-size: 0.73rem;" id="smsStatusText">
-                                    <i class="fa-solid fa-info-circle me-1"></i> Enter phone number to send real-time 2FA OTP message.
-                                </span>
-                            </div>
-
-                            <hr class="border-secondary my-3">
-
-                            <div class="mb-3">
-                                <label class="form-label text-muted small d-block font-mono">Enter Received 6-Digit Code</label>
-                                <input type="text" class="form-control glass-input text-center font-mono fs-4" id="otpCodeInput" placeholder="______" maxlength="6">
-                            </div>
-                            <button class="btn btn-cyber w-100 py-2 font-mono" onclick="verify2FACode()">
-                                <i class="fa-solid fa-shield-check me-1"></i> Verify OTP Code
+                    <!-- Real Mobile Phone SMS / WhatsApp OTP Option -->
+                    <div class="mb-3 text-start p-3 rounded-3 bg-dark border border-secondary">
+                        <label class="form-label text-white small font-mono mb-1">
+                            <i class="fa-solid fa-mobile-screen text-info me-1"></i> Send OTP to Real Mobile / WhatsApp
+                        </label>
+                        <div class="input-group mb-2">
+                            <input type="tel" class="form-control glass-input font-mono" id="hrRealPhoneInput" placeholder="+91 Enter Phone Number">
+                            <button class="btn btn-sm btn-outline-info font-mono" type="button" id="btnSendSmsOtp" onclick="sendSmsOtpToRealNumber()">
+                                <i class="fa-solid fa-paper-plane me-1"></i> Send OTP
                             </button>
                         </div>
+
+                        <div class="mb-1">
+                            <input type="text" class="form-control glass-input font-mono form-control-sm" id="callmebotKeyInput" placeholder="CallMeBot API Key (Optional for WhatsApp OTP)">
+                            <div class="mt-1 d-flex justify-content-between align-items-center" style="font-size: 0.7rem;">
+                                <span class="text-muted"><i class="fa-brands fa-whatsapp text-success me-1"></i> Instant WhatsApp OTP:</span>
+                                <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" class="text-info text-decoration-none">[Get Free API Key]</a>
+                            </div>
+                        </div>
+                        <span class="text-muted small font-mono" style="font-size: 0.72rem;" id="smsStatusText">
+                            <i class="fa-solid fa-info-circle me-1"></i> Enter phone number above to receive live 2FA OTP code.
+                        </span>
                     </div>
+
+                    <hr class="border-secondary my-3">
+
+                    <!-- 6-Digit Authenticator Code Input -->
+                    <div class="mb-3 text-start">
+                        <label class="form-label text-muted small d-block font-mono text-center mb-2">
+                            Enter 6-Digit Authenticator Code
+                        </label>
+                        <input type="text" class="form-control glass-input text-center font-mono fs-3" id="otpCodeInput" placeholder="______" maxlength="6" autocomplete="one-time-code">
+                    </div>
+
+                    <button class="btn btn-cyber-glow w-100 py-2.5 font-mono shadow-sm" onclick="verify2FACode()">
+                        <i class="fa-solid fa-shield-check me-2"></i> Verify Authenticator Code
+                    </button>
                 </div>
             </div>
         </div>
