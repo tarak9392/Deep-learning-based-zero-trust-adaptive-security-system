@@ -502,6 +502,210 @@ body.theme-platinum .theme-switcher-bar {
     animation: shieldBreath 3s ease-in-out infinite alternate;
 }
 
+.hologram-ring-3 {
+    position: absolute;
+    border-radius: 50%;
+    width: 95%;
+    height: 95%;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-top-color: var(--accent-color);
+    border-bottom-color: var(--secondary-color);
+    animation: rotateClockwise 6s linear infinite;
+    pointer-events: none;
+}
+
+.hologram-scanline {
+    position: absolute;
+    width: 90%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    box-shadow: 0 0 10px var(--accent-color);
+    animation: hologramScan 2.4s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes hologramScan {
+    0% { top: 15%; opacity: 0.2; }
+    50% { opacity: 0.9; }
+    100% { top: 85%; opacity: 0.2; }
+}
+
+/* Circular Trust Gauge */
+.trust-gauge-container {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto;
+}
+
+.trust-gauge-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.trust-gauge-circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 8;
+}
+
+.trust-gauge-circle-val {
+    fill: none;
+    stroke: #10b981;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 14; /* ~95% */
+    transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease;
+    filter: drop-shadow(0 0 8px #10b981);
+}
+
+.trust-gauge-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-family: var(--font-mono);
+}
+
+.trust-gauge-number {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.trust-gauge-label {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Hero Security Feature Tabs */
+.hero-nav-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 4px;
+}
+
+.hero-tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    transition: all 0.25s ease;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.hero-tab-btn.active {
+    background: rgba(99, 102, 241, 0.25);
+    color: #ffffff;
+    border: 1px solid var(--secondary-color);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
+}
+
+.hero-tab-btn:hover:not(.active) {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Terminal Log Streamer */
+.hero-terminal-stream {
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: #38bdf8;
+    height: 90px;
+    overflow-y: hidden;
+    position: relative;
+}
+
+.hero-terminal-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    animation: termLineFade 0.3s ease forwards;
+}
+
+@keyframes termLineFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Threat Simulation Pill Toggles */
+.threat-sim-pill {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.threat-sim-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.threat-sim-pill.active-normal {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #10b981 !important;
+    color: #34d399 !important;
+}
+
+.threat-sim-pill.active-warning {
+    background: rgba(245, 158, 11, 0.25) !important;
+    border-color: #f59e0b !important;
+    color: #fbbf24 !important;
+}
+
+.threat-sim-pill.active-danger {
+    background: rgba(244, 63, 94, 0.25) !important;
+    border-color: #f43f5e !important;
+    color: #fb7185 !important;
+}
+
+/* Dynamic Live Activity Waveform */
+.biometric-activity-meter {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 22px;
+    padding: 2px;
+}
+
+.biometric-bar {
+    width: 3.5px;
+    background: var(--accent-color);
+    border-radius: 2px;
+    transition: height 0.15s ease;
+    box-shadow: 0 0 6px var(--accent-color);
+}
+
 @keyframes rotateClockwise {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }

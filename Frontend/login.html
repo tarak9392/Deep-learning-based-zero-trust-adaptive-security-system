@@ -66,48 +66,126 @@
                 <div class="glass-panel p-4 p-md-5 shadow-2xl border border-secondary animate-fade-in" style="background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(20px);">
                     <div class="row g-4 g-lg-5 align-items-center">
                         
-                        <!-- LEFT PANEL: Visual Hologram & Security Intelligence -->
+                        <!-- LEFT PANEL: Visual Hologram & Security Intelligence Command -->
                         <div class="col-12 col-lg-5 text-center text-lg-start border-lg-end border-secondary pe-lg-4">
-                            <!-- Animated Hologram Shield -->
-                            <div class="hologram-shield-wrapper mb-3">
-                                <div class="hologram-ring hologram-ring-1"></div>
-                                <div class="hologram-ring hologram-ring-2"></div>
-                                <i class="fa-solid fa-shield-halved hologram-shield-icon"></i>
-                            </div>
-
-                            <h1 class="h3 fw-bold text-white mb-1">Zero Trust Security</h1>
-                            <p class="text-muted small mb-3">Adaptive AI Risk & Continuous Authentication</p>
-
-                            <!-- Live Telemetry Card -->
-                            <div class="telemetry-card mb-4 text-start">
-                                <div class="d-flex justify-content-between align-items-center mb-1 text-accent">
-                                    <span><i class="fa-solid fa-brain me-1"></i> Threat Engine</span>
-                                    <span class="text-success"><i class="fa-solid fa-circle-check me-1"></i> Active</span>
+                            
+                            <!-- Enhanced Hologram Shield 2.0 Projector -->
+                            <div class="position-relative d-inline-block d-lg-block text-center mb-3">
+                                <div class="hologram-shield-wrapper">
+                                    <div class="hologram-ring hologram-ring-1"></div>
+                                    <div class="hologram-ring hologram-ring-2"></div>
+                                    <div class="hologram-ring hologram-ring-3"></div>
+                                    <div class="hologram-scanline"></div>
+                                    <i class="fa-solid fa-shield-halved hologram-shield-icon" id="heroShieldIcon"></i>
                                 </div>
-                                <div class="text-muted small mb-2">Isolation Forest & Random Forest Models</div>
-                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary" style="font-size: 0.72rem;">
-                                    <span class="text-muted">Dynamic Trust Threshold</span>
-                                    <span class="text-info fw-bold font-mono">≥ 70% Safe Zone</span>
+                                <div class="mt-1">
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success font-mono px-3 py-1" id="heroStatusBadge" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-shield-check me-1"></i> ZERO TRUST ACTIVE
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- Security Architecture Highlights -->
-                            <div class="text-start mt-3 pt-3 border-top border-secondary">
-                                <div class="d-flex flex-column gap-2" style="font-size: 0.78rem;">
-                                    <div class="d-flex align-items-center gap-2 text-muted">
-                                        <i class="fa-solid fa-shield-halved text-info"></i>
-                                        <span>Never Trust, Always Verify Principle</span>
+                            <div class="text-center text-lg-start mb-3">
+                                <h1 class="h4 fw-bold text-white mb-1">Adaptive Zero Trust AI</h1>
+                                <p class="text-muted small mb-0">Autonomous Threat Intelligence & Continuous Biometrics</p>
+                            </div>
+
+                            <!-- Real-Time AI Trust Gauge & Live Biometric Velocity -->
+                            <div class="telemetry-card mb-3 p-3">
+                                <div class="row align-items-center g-2">
+                                    <div class="col-5 text-center border-end border-secondary">
+                                        <div class="trust-gauge-container">
+                                            <svg class="trust-gauge-svg" viewBox="0 0 100 100">
+                                                <circle class="trust-gauge-circle-bg" cx="50" cy="50" r="45"></circle>
+                                                <circle class="trust-gauge-circle-val" id="trustGaugeVal" cx="50" cy="50" r="45"></circle>
+                                            </svg>
+                                            <div class="trust-gauge-text">
+                                                <div class="trust-gauge-number" id="trustScoreVal">98%</div>
+                                                <div class="trust-gauge-label">TRUST</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="d-flex align-items-center gap-2 text-muted">
-                                        <i class="fa-solid fa-fingerprint text-success"></i>
-                                        <span>Continuous Keystroke & Mouse Dynamics</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2 text-muted">
-                                        <i class="fa-solid fa-network-wired text-primary"></i>
-                                        <span>Attribute-Based Dynamic Access Control (ABAC)</span>
+                                    <div class="col-7 ps-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-accent small fw-bold font-mono" style="font-size: 0.7rem;">BIOMETRIC WAVE</span>
+                                            <span class="text-success small font-mono" id="cadenceVal" style="font-size: 0.68rem;">Normal</span>
+                                        </div>
+                                        <!-- Dynamic Waveform responding to mouse / keyboard -->
+                                        <div class="biometric-activity-meter mb-2" id="bioMeter">
+                                            <div class="biometric-bar" style="height: 40%;"></div>
+                                            <div class="biometric-bar" style="height: 75%;"></div>
+                                            <div class="biometric-bar" style="height: 55%;"></div>
+                                            <div class="biometric-bar" style="height: 90%;"></div>
+                                            <div class="biometric-bar" style="height: 35%;"></div>
+                                            <div class="biometric-bar" style="height: 60%;"></div>
+                                            <div class="biometric-bar" style="height: 80%;"></div>
+                                            <div class="biometric-bar" style="height: 50%;"></div>
+                                            <div class="biometric-bar" style="height: 65%;"></div>
+                                        </div>
+                                        <div class="text-muted" style="font-size: 0.68rem;">
+                                            <i class="fa-solid fa-crosshairs text-info me-1"></i> Continuous Analysis
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Interactive Security Intelligence Tabs -->
+                            <div class="hero-nav-tabs mb-2">
+                                <button type="button" class="hero-tab-btn active" id="tabBtnModels" onclick="switchHeroTab('models')">
+                                    <i class="fa-solid fa-brain me-1"></i> AI Models
+                                </button>
+                                <button type="button" class="hero-tab-btn" id="tabBtnStream" onclick="switchHeroTab('stream')">
+                                    <i class="fa-solid fa-terminal me-1"></i> Live Logs
+                                </button>
+                                <button type="button" class="hero-tab-btn" id="tabBtnSim" onclick="switchHeroTab('sim')">
+                                    <i class="fa-solid fa-radiation me-1"></i> Threat Sim
+                                </button>
+                            </div>
+
+                            <!-- TAB 1: AI Models Overview -->
+                            <div id="paneModels" class="telemetry-card text-start py-2 px-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.72rem;">
+                                    <span class="text-muted"><i class="fa-solid fa-microchip text-info me-1"></i> Isolation Forest:</span>
+                                    <span class="text-success font-mono">0.02 Anomaly [PASS]</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.72rem;">
+                                    <span class="text-muted"><i class="fa-solid fa-shield-virus text-primary me-1"></i> Random Forest:</span>
+                                    <span class="text-info font-mono">Low Risk Tier [SAFE]</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+                                    <span class="text-muted"><i class="fa-solid fa-lock text-warning me-1"></i> ABAC Policy:</span>
+                                    <span class="text-accent font-mono">Level 4 Enforced</span>
+                                </div>
+                            </div>
+
+                            <!-- TAB 2: Live Security Terminal Stream -->
+                            <div id="paneStream" class="hero-terminal-stream text-start" style="display: none;">
+                                <div id="terminalContent">
+                                    <div class="hero-terminal-line text-info">[AI Engine] Neural weights initialized v2.4</div>
+                                    <div class="hero-terminal-line text-success">[Biometrics] Behavioral cadence baseline locked</div>
+                                    <div class="hero-terminal-line text-muted">[Policy] ABAC dynamic context evaluator active</div>
+                                    <div class="hero-terminal-line text-info">[Zero Trust] Ready for identity handshake...</div>
+                                </div>
+                            </div>
+
+                            <!-- TAB 3: Interactive Threat Simulator -->
+                            <div id="paneSim" class="text-start" style="display: none;">
+                                <div class="d-flex flex-column gap-2">
+                                    <button type="button" class="threat-sim-pill active-normal" id="simPillNormal" onclick="setSimulatedThreat('normal')">
+                                        <i class="fa-solid fa-circle-check text-success"></i>
+                                        <span>Normal State (98% Trust • Access Granted)</span>
+                                    </button>
+                                    <button type="button" class="threat-sim-pill" id="simPillWarning" onclick="setSimulatedThreat('warning')">
+                                        <i class="fa-solid fa-triangle-exclamation text-warning"></i>
+                                        <span>Elevated Risk (55% Trust • Step-Up MFA)</span>
+                                    </button>
+                                    <button type="button" class="threat-sim-pill" id="simPillDanger" onclick="setSimulatedThreat('danger')">
+                                        <i class="fa-solid fa-ban text-danger"></i>
+                                        <span>Hostile Threat (18% Trust • Hard Lockout)</span>
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
 
                         <!-- RIGHT PANEL: Authentication Form & Context Simulation -->
@@ -433,6 +511,160 @@
             }
             animate();
         })();
+
+        // =========================================================
+        // Interactive Hero Section Controls & Real-Time Intelligence
+        // =========================================================
+
+        function switchHeroTab(tab) {
+            const tabs = ['models', 'stream', 'sim'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                const pane = document.getElementById(`pane${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (btn && pane) {
+                    if (t === tab) {
+                        btn.classList.add('active');
+                        pane.style.display = 'block';
+                    } else {
+                        btn.classList.remove('active');
+                        pane.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function setSimulatedThreat(level) {
+            const gauge = document.getElementById('trustGaugeVal');
+            const score = document.getElementById('trustScoreVal');
+            const icon = document.getElementById('heroShieldIcon');
+            const badge = document.getElementById('heroStatusBadge');
+            const pNormal = document.getElementById('simPillNormal');
+            const pWarning = document.getElementById('simPillWarning');
+            const pDanger = document.getElementById('simPillDanger');
+
+            [pNormal, pWarning, pDanger].forEach(p => {
+                if (p) p.classList.remove('active-normal', 'active-warning', 'active-danger');
+            });
+
+            if (level === 'normal') {
+                if (pNormal) pNormal.classList.add('active-normal');
+                if (gauge) {
+                    gauge.style.strokeDashoffset = '14';
+                    gauge.style.stroke = '#10b981';
+                    gauge.style.filter = 'drop-shadow(0 0 8px #10b981)';
+                }
+                if (score) score.innerText = '98%';
+                if (icon) {
+                    icon.style.color = '#38bdf8';
+                    icon.style.filter = 'drop-shadow(0 0 16px #38bdf8)';
+                }
+                if (badge) {
+                    badge.className = 'badge rounded-pill bg-success-subtle text-success border border-success font-mono px-3 py-1';
+                    badge.innerHTML = '<i class="fa-solid fa-shield-check me-1"></i> ZERO TRUST ACTIVE';
+                }
+                appendTerminalLine('[Sim Threat] Baseline restored: 98% Normal Safe State');
+            } else if (level === 'warning') {
+                if (pWarning) pWarning.classList.add('active-warning');
+                if (gauge) {
+                    gauge.style.strokeDashoffset = '127';
+                    gauge.style.stroke = '#f59e0b';
+                    gauge.style.filter = 'drop-shadow(0 0 8px #f59e0b)';
+                }
+                if (score) score.innerText = '55%';
+                if (icon) {
+                    icon.style.color = '#f59e0b';
+                    icon.style.filter = 'drop-shadow(0 0 16px #f59e0b)';
+                }
+                if (badge) {
+                    badge.className = 'badge rounded-pill bg-warning-subtle text-warning border border-warning font-mono px-3 py-1';
+                    badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> STEP-UP MFA REQUIRED';
+                }
+                appendTerminalLine('[Sim Threat] WARNING: Context anomaly detected. MFA enforced.');
+            } else if (level === 'danger') {
+                if (pDanger) pDanger.classList.add('active-danger');
+                if (gauge) {
+                    gauge.style.strokeDashoffset = '232';
+                    gauge.style.stroke = '#f43f5e';
+                    gauge.style.filter = 'drop-shadow(0 0 8px #f43f5e)';
+                }
+                if (score) score.innerText = '18%';
+                if (icon) {
+                    icon.style.color = '#f43f5e';
+                    icon.style.filter = 'drop-shadow(0 0 16px #f43f5e)';
+                }
+                if (badge) {
+                    badge.className = 'badge rounded-pill bg-danger-subtle text-danger border border-danger font-mono px-3 py-1';
+                    badge.innerHTML = '<i class="fa-solid fa-ban me-1"></i> HOSTILE ATTACK DETECTED';
+                }
+                appendTerminalLine('[Sim Threat] CRITICAL: Tor exit spoofing identified! Access locked.');
+            }
+        }
+
+        function appendTerminalLine(text) {
+            const content = document.getElementById('terminalContent');
+            const stream = document.getElementById('paneStream');
+            if (content) {
+                const line = document.createElement('div');
+                line.className = 'hero-terminal-line text-warning';
+                line.innerText = text;
+                content.appendChild(line);
+                if (stream) stream.scrollTop = stream.scrollHeight;
+            }
+        }
+
+        // Live Biometric Waveform Reaction (Mouse & Keystroke Velocity)
+        const bioBars = document.querySelectorAll('.biometric-bar');
+        const cadenceLabel = document.getElementById('cadenceVal');
+
+        let lastBioUpdate = 0;
+        function pulseBiometrics(isTyping = false) {
+            const now = Date.now();
+            if (now - lastBioUpdate < 80) return;
+            lastBioUpdate = now;
+
+            bioBars.forEach(bar => {
+                const h = Math.floor(Math.random() * (isTyping ? 75 : 55)) + 25;
+                bar.style.height = `${h}%`;
+            });
+
+            if (cadenceLabel) {
+                cadenceLabel.innerText = isTyping ? 'Typing Rhythm...' : 'Tracking Mouse';
+                cadenceLabel.className = isTyping ? 'text-info small font-mono' : 'text-success small font-mono';
+                clearTimeout(window._cadenceTimeout);
+                window._cadenceTimeout = setTimeout(() => {
+                    cadenceLabel.innerText = 'Normal';
+                    cadenceLabel.className = 'text-success small font-mono';
+                }, 900);
+            }
+        }
+
+        window.addEventListener('mousemove', () => pulseBiometrics(false));
+        window.addEventListener('keydown', () => pulseBiometrics(true));
+
+        // Periodic Automated Live Log Feed
+        const simulatedLogs = [
+            '[Continuous Biometrics] Cursor velocity profile matches baseline',
+            '[AI Inference Engine] Threat classification score: 0.012 (Clean)',
+            '[Context ABAC Engine] Network hop verified via TLS 1.3 protocol',
+            '[Behavioral Anomaly] Zero unauthorized micro-hesitations detected',
+            '[Session Monitor] Adaptive Trust Score evaluated at 98.4%'
+        ];
+        let logIndex = 0;
+        setInterval(() => {
+            const content = document.getElementById('terminalContent');
+            const stream = document.getElementById('paneStream');
+            if (content) {
+                const line = document.createElement('div');
+                line.className = 'hero-terminal-line text-info';
+                line.innerText = simulatedLogs[logIndex % simulatedLogs.length];
+                content.appendChild(line);
+                logIndex++;
+                if (stream) stream.scrollTop = stream.scrollHeight;
+                if (content.children.length > 20) {
+                    content.removeChild(content.children[0]);
+                }
+            }
+        }, 4500);
     </script>
 </body>
 </html>
